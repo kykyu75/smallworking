@@ -27,7 +27,12 @@ class Base(DeclarativeBase):
 @lru_cache
 def get_engine() -> Engine:
     # 서버리스(Vercel) 환경: 연결을 오래 붙잡지 않도록 pool_pre_ping으로 끊긴 연결을 걸러낸다
-    return create_engine(get_settings().database_url, pool_pre_ping=True)
+    # timezone=UTC: DB 서버 설정(로컬 Windows는 Asia/Seoul, Neon은 UTC)과 관계없이 항상 UTC로 주고받는다
+    return create_engine(
+        get_settings().database_url,
+        pool_pre_ping=True,
+        connect_args={"options": "-c timezone=UTC"},
+    )
 
 
 @lru_cache

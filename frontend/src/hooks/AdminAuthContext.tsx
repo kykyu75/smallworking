@@ -14,11 +14,12 @@ export function AdminAuthProvider({ children }: { children: ReactNode }) {
     setUsername(null)
   }, [])
 
-  // 어떤 API든 401이 오면 로그아웃 상태로 바꾼다 → RequireAdmin이 로그인 화면으로 보낸다
+  // 작업 중 API가 401을 돌려주면 '만료' 상태로 바꾼다.
+  // RequireAdmin은 화면(작성 중인 글)을 바로 치우지 않고 안내 배너를 띄운다 (TC-ADM-018).
   useEffect(() => {
-    setUnauthorizedHandler(() => markAnonymous())
+    setUnauthorizedHandler(() => setStatus((prev) => (prev === 'authenticated' || prev === 'expired' ? 'expired' : 'anonymous')))
     return () => setUnauthorizedHandler(null)
-  }, [markAnonymous])
+  }, [])
 
   const check = useCallback(async () => {
     setStatus('checking')

@@ -33,6 +33,10 @@ def default_category(db) -> Category:
 # ---------------------------------------------------------------- 구조
 
 
+def test_db_session_uses_utc(db_session):
+    assert db_session.execute(text("SHOW timezone")).scalar_one() == "UTC"
+
+
 def test_all_tables_exist():
     tables = set(inspect(get_engine()).get_table_names())
     assert {"category", "post", "post_image", "comment", "post_like", "admin_user", "admin_session"} <= tables

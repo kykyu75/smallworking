@@ -1,7 +1,8 @@
 import { createContext } from 'react'
 import type { LoginInput } from '../types/admin'
 
-export type AdminAuthStatus = 'unknown' | 'checking' | 'authenticated' | 'anonymous'
+// expired: 로그인한 상태로 작업하다가 세션이 만료됨 (화면을 바로 치우지 않고 안내한다, TC-ADM-018)
+export type AdminAuthStatus = 'unknown' | 'checking' | 'authenticated' | 'expired' | 'anonymous'
 
 export interface AdminAuthValue {
   status: AdminAuthStatus
