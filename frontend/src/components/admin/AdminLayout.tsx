@@ -1,5 +1,4 @@
 // COMP-101 AdminLayout + COMP-102 AdminNav
-// 메뉴는 기능이 구현되는 단계(M8 댓글)에 맞춰 추가한다.
 import type { MouseEvent } from 'react'
 import { NavLink, Outlet, useNavigate } from 'react-router'
 import { useAdminAuth } from '../../hooks/useAdminAuth'
@@ -9,6 +8,7 @@ const NAV_ITEMS = [
   { to: '/admin', label: '대시보드', end: true },
   { to: '/admin/categories', label: '카테고리', end: false },
   { to: '/admin/posts', label: '게시글', end: false },
+  { to: '/admin/comments', label: '댓글', end: false },
 ]
 
 function navClass({ isActive }: { isActive: boolean }) {
