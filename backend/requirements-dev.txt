@@ -1,0 +1,4 @@
+# 개발·테스트 전용 (운영에는 설치하지 않음) — DEC-008
+-r requirements.txt
+pytest
+httpx

@@ -93,7 +93,8 @@ TEST_CASES에 TC 추가
 |---|---|
 | Frontend | React, TypeScript, Vite, React Router, Tailwind CSS, TipTap |
 | Backend | Python 3.12, FastAPI, Pydantic v2, SQLAlchemy 2.x, Alembic, psycopg(v3), argon2-cffi, Pillow, Vercel Blob Python SDK |
-| 테스트 | pytest + TestClient(httpx), Vitest + React Testing Library, Playwright |
+| 테스트 | pytest + TestClient(httpx), Vitest + React Testing Library + jsdom, Playwright |
+| 개발 도구 | uvicorn (로컬 실행), oxlint (Frontend 코드 검사) |
 | 배포 | Vercel (GitHub 연동), Neon, Vercel Blob, Vercel Cron |
 | 사용하지 않음 | 서버 데이터 캐시 라이브러리(TanStack Query 등), CSS-in-JS, 별도 UI 컴포넌트 라이브러리, JWT |
 
@@ -253,18 +254,31 @@ SmallWorking/
 
 ## 14. 명령어
 
-> 프로젝트 뼈대(M0)를 만든 뒤 실제 명령으로 채운다.
+> Windows PowerShell 기준. Backend 명령은 `backend/`, Frontend 명령은 `frontend/` 폴더에서 실행한다.
 
 | 작업 | 명령 |
 |---|---|
-| Backend 실행 | (M0에서 확정) |
-| Frontend 실행 | (M0에서 확정) |
-| 마이그레이션 | `alembic upgrade head` |
-| 관리자 생성 | `python -m app.cli create-admin` |
-| 정리 작업 (로컬) | `python -m app.cli cleanup` |
-| Backend 테스트 | (M0에서 확정) |
-| Frontend 테스트 | (M0에서 확정) |
-| E2E 테스트 | (M0에서 확정) |
+| Backend 가상환경 만들기 (최초 1회) | `py -3.12 -m venv .venv` → `.\.venv\Scripts\python -m pip install -r requirements-dev.txt` |
+| Backend 실행 | `.\.venv\Scripts\python -m uvicorn app.main:app --reload` → http://127.0.0.1:8000/api/docs |
+| Frontend 설치 (최초 1회) | `npm install` |
+| Frontend 실행 | `npm run dev` → http://localhost:5173 (`/api`, `/uploads`는 Backend로 프록시) |
+| 마이그레이션 적용 | `.\.venv\Scripts\python -m alembic upgrade head` |
+| 마이그레이션 생성 | `.\.venv\Scripts\python -m alembic revision --autogenerate -m "<설명>"` (생성된 파일은 반드시 검토) |
+| 관리자 생성 | `.\.venv\Scripts\python -m app.cli create-admin` (M2) |
+| 정리 작업 (로컬) | `.\.venv\Scripts\python -m app.cli cleanup` (M9) |
+| Backend 테스트 | `.\.venv\Scripts\python -m pytest` (테스트 DB `smallworking_test` 사용) |
+| Frontend 테스트 | `npm test` |
+| Frontend 타입 검사 + 빌드 | `npm run build` |
+| Frontend lint | `npm run lint` |
+| E2E 테스트 | (M10에서 Playwright 설치 시 확정) |
+
+### 로컬 환경 메모
+
+- Python: 프로젝트는 **3.12** (`backend/.venv`). PC에 3.13도 있으므로 `py -3.12`로 지정한다.
+- PostgreSQL 17 (Windows 서비스 `postgresql-x64-17`, 자동 시작). DB: `smallworking_dev`, `smallworking_test` / 앱 계정: `smallworking`.
+- 비밀값 위치: `backend/.env` (앱 설정), 루트 `.env.local` (PostgreSQL 관리자 비밀번호). 둘 다 Git 제외.
+- `backend/alembic.ini`는 **ASCII만** 사용한다 (Alembic이 cp949로 읽음).
+- `.env` 파일은 BOM이 있어도 읽히도록 처리되어 있다 (`app/core/config.py`).
 
 ---
 
