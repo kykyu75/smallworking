@@ -179,6 +179,9 @@ Alembic 초기 마이그레이션에서 다음 4개를 생성한다.
 | `image.attrs` | `imageId`(필수, 정수)와 `alt`(선택)만 허용. **`src`는 저장하지 않는다** (표시할 때 `post_image`에서 경로를 찾음) |
 | `link.attrs` | `href`만 허용, `http://`, `https://`, `mailto:`로 시작하는 경우만 허용 |
 
+- **[M5 구현 세부] 노드 속성 추가 허용** (TipTap이 기본으로 만드는 값, 보안 영향 없음):
+  `heading.level`(2·3만), `orderedList.start`(1 이상 정수), `codeBlock.language`(30자 이하 문자열 또는 null). 값이 `null`인 선택 속성은 "없음"으로 본다.
+- **[M5 구현 세부] 빈 본문 거부:** 공백이 아닌 글자나 이미지가 하나도 없으면 `422 VALIDATION_ERROR`(field `content`, REQ-038).
 - 허용되지 않은 노드·마크·속성이 있으면 저장을 거부한다 (`422`).
 - `image` 노드 수는 최대 **20개** (DEC-002).
 - 같은 `imageId`가 본문에 두 번 나오면 거부한다.

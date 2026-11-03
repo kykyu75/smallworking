@@ -4,3 +4,50 @@
 body {
   overflow-wrap: anywhere;
 }
+
+/* 게시글 본문 (PostContent)과 에디터(ProseMirror)가 같은 모양을 쓰도록 공통 스타일 */
+@layer components {
+  .post-content,
+  .tiptap {
+    @apply space-y-4 leading-relaxed text-gray-800;
+  }
+  .post-content h2,
+  .tiptap h2 {
+    @apply mt-8 text-xl font-bold;
+  }
+  .post-content h3,
+  .tiptap h3 {
+    @apply mt-6 text-lg font-semibold;
+  }
+  .post-content ul,
+  .tiptap ul {
+    @apply list-disc pl-6;
+  }
+  .post-content ol,
+  .tiptap ol {
+    @apply list-decimal pl-6;
+  }
+  .post-content blockquote,
+  .tiptap blockquote {
+    @apply border-l-4 border-gray-300 pl-4 text-gray-600;
+  }
+  .post-content pre,
+  .tiptap pre {
+    @apply overflow-x-auto rounded bg-gray-900 p-4 text-sm text-gray-100;
+  }
+  .post-content hr,
+  .tiptap hr {
+    @apply my-8 border-gray-200;
+  }
+  /* 이미지가 화면 폭을 넘지 않게 (REQ-037, TC-RES-006) */
+  .post-content img,
+  .tiptap img {
+    @apply h-auto max-w-full rounded;
+  }
+  .tiptap img.ProseMirror-selectednode {
+    @apply outline-2 outline-blue-500;
+  }
+  .tiptap a {
+    @apply text-blue-700 underline;
+  }
+}
