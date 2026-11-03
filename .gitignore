@@ -18,6 +18,7 @@ venv/
 
 # 로컬 이미지 저장소 (개발 전용, DEC-007)
 backend/uploads/
+backend/.e2e-uploads/
 
 # Node / Frontend
 node_modules/

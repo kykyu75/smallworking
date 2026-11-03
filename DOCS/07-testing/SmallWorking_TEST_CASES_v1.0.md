@@ -335,6 +335,18 @@ TC-xxx  (제대로 만들어졌는가)   ← 현재 문서
 
 # 15. 통합 테스트 (사용자 시나리오, E2E)
 
+> **[M10 구현]** Playwright E2E 22개 (`frontend/e2e/`, `npm run e2e`). 실제 Chromium + 실제 Backend + E2E 전용 DB.
+>
+> | 파일 | 자동화한 TC |
+> |---|---|
+> | `operator.spec.ts` | TC-INT-002 전체 (TipTap 실제 타이핑·굵게·사진 삽입, 2400×1600 → 1920×1280 축소 확인), TC-ADM-008 |
+> | `visitor.spec.ts` | TC-INT-001 전체 (좋아요 토글·새로고침 유지, 두 방문자, 댓글·답글·수정·삭제), TC-POST-016 |
+> | `security.spec.ts` | TC-INT-004 (로그인 잠금 제외*), TC-SEC-001~003, 010, 013 |
+> | `responsive.spec.ts` | TC-RES-001~007, 009 (360·768·1280px, 767/768 경계) |
+>
+> \* 로그인 잠금(TC-ADM-012)은 E2E 관리자를 10분간 잠가 다른 E2E를 막으므로 Backend 테스트로만 검증한다.
+> TC-RES-008·010·011(실제 휴대폰), TC-DEP-*(Vercel)은 수동 확인으로 남는다.
+
 ### TC-INT-001 방문자 시나리오 (P1)
 
 ```text

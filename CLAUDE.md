@@ -271,7 +271,8 @@ SmallWorking/
 | Frontend 테스트 | `npm test` |
 | Frontend 타입 검사 + 빌드 | `npm run build` |
 | Frontend lint | `npm run lint` |
-| E2E 테스트 | (M10에서 Playwright 설치 시 확정) |
+| E2E 테스트 | `npm run e2e` (frontend 폴더) — E2E 전용 Backend(8001, DB `smallworking_e2e`)와 Frontend(5174)를 자동으로 띄운다. 개발 서버·개발 DB와 겹치지 않음. 결과 보기: `npm run e2e:report` |
+| Playwright 브라우저 설치 (최초 1회) | `npx playwright install chromium` |
 
 ### 로컬 환경 메모
 
