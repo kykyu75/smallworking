@@ -9,9 +9,11 @@
 from __future__ import annotations
 
 import os
+from collections.abc import Iterator
+from datetime import timezone
 from urllib.parse import quote
 
-from app.storage.base import StorageError
+from app.storage.base import StorageError, StoredFile
 
 # 브라우저 캐시: 키가 무작위라 같은 주소의 내용이 바뀌지 않으므로 오래 캐시해도 된다 (1년)
 CACHE_MAX_AGE = 60 * 60 * 24 * 365
@@ -59,3 +61,16 @@ class BlobStorage:
 
     def public_url(self, key: str) -> str:
         return f"{self.public_base_url}/{quote(key)}"
+
+    def list_files(self, prefix: str) -> Iterator[StoredFile]:
+        from vercel.blob import BlobError
+        from vercel.blob.sync import query_blobs
+
+        try:
+            for blob in query_blobs(prefix=prefix):
+                uploaded = blob.uploaded_at
+                if uploaded.tzinfo is None:
+                    uploaded = uploaded.replace(tzinfo=timezone.utc)
+                yield StoredFile(key=blob.pathname, modified_at=uploaded)
+        except BlobError as exc:
+            raise StorageError(str(exc)) from exc

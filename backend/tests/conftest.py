@@ -21,6 +21,7 @@ if not _test_url:
     raise RuntimeError("TEST_DATABASE_URL이 없습니다. backend/.env를 확인하세요.")
 os.environ["DATABASE_URL"] = _test_url
 os.environ["COOKIE_SECURE"] = "false"
+os.environ["CRON_SECRET"] = "test-cron-secret"  # 실제 .env 값 대신 테스트 전용 값
 # 이미지는 테스트 전용 임시 폴더에만 저장한다 (개발용 backend/uploads를 건드리지 않음)
 import tempfile  # noqa: E402
 

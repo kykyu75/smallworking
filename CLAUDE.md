@@ -266,7 +266,7 @@ SmallWorking/
 | 마이그레이션 적용 | `.\.venv\Scripts\python -m alembic upgrade head` |
 | 마이그레이션 생성 | `.\.venv\Scripts\python -m alembic revision --autogenerate -m "<설명>"` (생성된 파일은 반드시 검토) |
 | 관리자 생성 | `.\.venv\Scripts\python -m app.cli create-admin` (M2) |
-| 정리 작업 (로컬) | `.\.venv\Scripts\python -m app.cli cleanup` (M9) |
+| 정리 작업 (로컬) | `.\.venv\Scripts\python -m app.cli cleanup` (24시간 지난 임시 이미지·고아 파일, 만료 세션) |
 | Backend 테스트 | `.\.venv\Scripts\python -m pytest` (테스트 DB `smallworking_test` 사용) |
 | Frontend 테스트 | `npm test` |
 | Frontend 타입 검사 + 빌드 | `npm run build` |

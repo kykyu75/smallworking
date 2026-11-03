@@ -7,7 +7,7 @@ Vercel:     api/index.py가 이 app을 불러온다 (M11)
 from fastapi import FastAPI
 from fastapi.staticfiles import StaticFiles
 
-from app.api import admin_auth, categories, comments, health, home, images, likes, posts
+from app.api import admin_auth, categories, comments, cron, health, home, images, likes, posts
 from app.core.config import get_settings
 from app.core.errors import register_error_handlers
 from app.core.headers import SecurityHeadersMiddleware
@@ -36,6 +36,7 @@ def create_app() -> FastAPI:
     app.include_router(likes.router)
     app.include_router(comments.router)
     app.include_router(home.router)
+    app.include_router(cron.router)
 
     # 개발 환경(LocalStorage)에서만 업로드 파일을 직접 제공한다. 운영은 Vercel Blob 주소에서 받는다 (DEC-007)
     if settings.storage_backend == "local":
