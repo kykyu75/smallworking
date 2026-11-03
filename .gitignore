@@ -1,0 +1,39 @@
+# 비밀값 / 환경변수 (CLAUDE.md §3-5, §12)
+.env
+.env.*
+!.env.example
+
+# 이전 ChatGPT 대화 기록 (공개 저장소에서 제외)
+홈페이지.md
+
+# Python
+__pycache__/
+*.py[cod]
+.venv/
+venv/
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+*.egg-info/
+
+# 로컬 이미지 저장소 (개발 전용, DEC-007)
+backend/uploads/
+
+# Node / Frontend
+node_modules/
+frontend/dist/
+frontend/coverage/
+*.log
+
+# Playwright
+test-results/
+playwright-report/
+
+# Vercel
+.vercel/
+
+# OS / Editor
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/
