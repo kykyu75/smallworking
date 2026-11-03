@@ -1,0 +1,20 @@
+"""StorageBackend 인터페이스."""
+
+from __future__ import annotations
+
+from typing import Protocol
+
+
+class StorageError(Exception):
+    """저장소 작업 실패 (네트워크, 권한 등)."""
+
+
+class StorageBackend(Protocol):
+    def save(self, key: str, data: bytes, content_type: str) -> None:
+        """key 위치에 파일을 저장한다. 같은 key가 있으면 실패해야 한다 (덮어쓰지 않음)."""
+
+    def delete(self, keys: list[str]) -> None:
+        """파일을 삭제한다. 이미 없는 파일은 무시한다."""
+
+    def public_url(self, key: str) -> str:
+        """브라우저가 이미지를 받을 주소."""

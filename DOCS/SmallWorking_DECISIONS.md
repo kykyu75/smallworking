@@ -450,6 +450,7 @@ Vercel (하나의 프로젝트, 하나의 도메인)
 | 로컬 실행 서버 | uvicorn (FastAPI 실행용) — M0 추가 |
 | Frontend 코드 검사 | oxlint (Vite 공식 템플릿 포함) — M0 추가 |
 | 테스트용 가상 브라우저 | jsdom (Vitest 화면 테스트용) — M0 추가 |
+| 파일 업로드 처리 | python-multipart (FastAPI 파일 업로드에 필요, Vercel Blob SDK의 의존성으로도 설치됨) — M4 추가 |
 
 > 스타일링은 처음 추천안(CSS Modules) 대신 **사용자 요청으로 Tailwind CSS**로 정했다.
 > uvicorn, oxlint, jsdom은 M0 뼈대 작업 중 필요해져 **사용자 확인 후 추가**했다 (2026-11-03). 셋 다 개발 도구이며 화면·기능에 영향이 없다.

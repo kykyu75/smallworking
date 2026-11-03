@@ -200,6 +200,7 @@ SmallWorking/
 | `STORAGE_BACKEND` | `local` / `blob` |
 | `UPLOAD_ROOT` | 로컬 저장 폴더 (개발) |
 | `BLOB_READ_WRITE_TOKEN` | Vercel Blob (운영) |
+| `BLOB_PUBLIC_BASE_URL` | Vercel Blob store 공개 주소 — 저장 키로 이미지 주소를 만든다 (운영, M4 추가) |
 | `ADMIN_USERNAME`, `ADMIN_PASSWORD` | `create-admin` 명령에서만 사용 |
 | `ALLOWED_ORIGINS` | Origin 검사 허용 주소 |
 | `CRON_SECRET` | API-028 인증 |
