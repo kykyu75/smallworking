@@ -1,6 +1,6 @@
-"""게시글 API (API-006~010).
+"""게시글 API (API-006~012).
 
-라우트 순서: M6에서 추가할 /latest, /popular 같은 고정 경로는 /{post_id}보다 먼저 선언한다 (API_SPEC §2.4).
+라우트 순서: /latest, /popular 같은 고정 경로는 /{post_id}보다 먼저 선언한다 (API_SPEC §2.4).
 """
 
 from __future__ import annotations
@@ -13,8 +13,8 @@ from sqlalchemy.orm import Session
 from app.core.clock import get_now
 from app.core.db import get_db
 from app.core.deps import require_admin
-from app.schemas.post import PostDetail, PostInput, PostPage
-from app.services import post_service
+from app.schemas.post import PostDetail, PostInput, PostList, PostPage
+from app.services import home_service, post_service
 from app.storage import StorageBackend, get_storage
 
 router = APIRouter(prefix="/api/posts", tags=["posts"])
@@ -43,6 +43,26 @@ def create_post(
     now: datetime = Depends(get_now),
 ) -> PostDetail:
     return post_service.create_post(db, storage, body, now)
+
+
+# API-011 (공개) — /{post_id}보다 먼저
+@router.get("/latest", response_model=PostList)
+def latest_posts(
+    limit: int = Query(default=home_service.HOME_LATEST_POSTS, ge=1, le=20),
+    db: Session = Depends(get_db),
+    storage: StorageBackend = Depends(get_storage),
+) -> PostList:
+    return PostList(items=home_service.latest_posts(db, storage, limit))
+
+
+# API-012 (공개) — /{post_id}보다 먼저
+@router.get("/popular", response_model=PostList)
+def popular_posts(
+    limit: int = Query(default=home_service.HOME_POPULAR_POSTS, ge=1, le=20),
+    db: Session = Depends(get_db),
+    storage: StorageBackend = Depends(get_storage),
+) -> PostList:
+    return PostList(items=home_service.popular_posts(db, storage, limit))
 
 
 # API-007 (공개)

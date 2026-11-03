@@ -276,6 +276,7 @@ SmallWorking/
 ### 로컬 환경 메모
 
 - Python: 프로젝트는 **3.12** (`backend/.venv`). PC에 3.13도 있으므로 `py -3.12`로 지정한다.
+- PowerShell에서 `npm`이 "스크립트를 실행할 수 없으므로" 오류를 내면 실행 정책 문제다. `npm.cmd run dev`처럼 `npm.cmd`를 쓰거나, 사용자가 `Set-ExecutionPolicy -Scope CurrentUser RemoteSigned`를 한 번 실행한다 (시스템 설정이므로 Claude가 임의로 바꾸지 않는다).
 - PostgreSQL 17 (Windows 서비스 `postgresql-x64-17`, 자동 시작). DB: `smallworking_dev`, `smallworking_test` / 앱 계정: `smallworking`.
 - 비밀값 위치: `backend/.env` (앱 설정), 루트 `.env.local` (PostgreSQL 관리자 비밀번호). 둘 다 Git 제외.
 - `backend/alembic.ini`는 **ASCII만** 사용한다 (Alembic이 cp949로 읽음).

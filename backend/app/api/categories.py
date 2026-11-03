@@ -3,13 +3,15 @@
 라우트 선언 순서: 고정 경로(/order)를 변수 경로(/{category_id})보다 먼저 둔다 (API_SPEC §2.4).
 """
 
-from fastapi import APIRouter, Depends, Response, status
+from fastapi import APIRouter, Depends, Query, Response, status
 from sqlalchemy.orm import Session
 
 from app.core.db import get_db
 from app.core.deps import require_admin
 from app.schemas.category import CategoryInput, CategoryList, CategoryOrderInput, CategoryOut
-from app.services import category_service
+from app.schemas.post import CategoryLatest
+from app.services import category_service, home_service
+from app.storage import StorageBackend, get_storage
 
 router = APIRouter(prefix="/api/categories", tags=["categories"])
 
@@ -36,6 +38,17 @@ def reorder_categories(body: CategoryOrderInput, db: Session = Depends(get_db)) 
 @router.put("/{category_id}", response_model=CategoryOut, dependencies=[Depends(require_admin)])
 def update_category(category_id: int, body: CategoryInput, db: Session = Depends(get_db)) -> CategoryOut:
     return category_service.update_category(db, category_id, body)
+
+
+# API-013 (공개)
+@router.get("/{category_id}/posts/latest", response_model=CategoryLatest)
+def category_latest_posts(
+    category_id: int,
+    limit: int = Query(default=home_service.HOME_CATEGORY_POSTS, ge=1, le=20),
+    db: Session = Depends(get_db),
+    storage: StorageBackend = Depends(get_storage),
+) -> CategoryLatest:
+    return home_service.category_latest(db, storage, category_id, limit)
 
 
 # API-004 (관리자)
