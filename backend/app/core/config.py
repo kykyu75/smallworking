@@ -50,6 +50,7 @@ class Settings:
     storage_backend: str
     upload_root: Path
     blob_read_write_token: str
+    blob_public_base_url: str
     allowed_origins: tuple[str, ...]
     cron_secret: str
     cookie_secure: bool
@@ -70,6 +71,7 @@ class Settings:
             storage_backend=os.environ.get("STORAGE_BACKEND", "local"),
             upload_root=upload_root,
             blob_read_write_token=os.environ.get("BLOB_READ_WRITE_TOKEN", ""),
+            blob_public_base_url=os.environ.get("BLOB_PUBLIC_BASE_URL", "").rstrip("/"),
             allowed_origins=_list(os.environ.get("ALLOWED_ORIGINS")),
             cron_secret=os.environ.get("CRON_SECRET", ""),
             cookie_secure=_bool(os.environ.get("COOKIE_SECURE"), default=True),

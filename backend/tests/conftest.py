@@ -21,6 +21,12 @@ if not _test_url:
     raise RuntimeError("TEST_DATABASE_URL이 없습니다. backend/.env를 확인하세요.")
 os.environ["DATABASE_URL"] = _test_url
 os.environ["COOKIE_SECURE"] = "false"
+# 이미지는 테스트 전용 임시 폴더에만 저장한다 (개발용 backend/uploads를 건드리지 않음)
+import tempfile  # noqa: E402
+
+_TEST_UPLOAD_ROOT = tempfile.mkdtemp(prefix="smallworking-test-uploads-")
+os.environ["STORAGE_BACKEND"] = "local"
+os.environ["UPLOAD_ROOT"] = _TEST_UPLOAD_ROOT
 
 from alembic import command  # noqa: E402
 from alembic.config import Config  # noqa: E402
@@ -31,6 +37,8 @@ from app.core.clock import get_now  # noqa: E402
 from app.core.config import BACKEND_DIR  # noqa: E402
 from app.core.db import get_db, get_engine  # noqa: E402
 from app.main import create_app  # noqa: E402
+from app.storage import get_storage  # noqa: E402
+from app.storage.local import LocalStorage  # noqa: E402
 
 
 def alembic_config() -> Config:
@@ -75,11 +83,26 @@ def clock() -> FakeClock:
     return FakeClock()
 
 
+@pytest.fixture(scope="session", autouse=True)
+def _remove_test_upload_root() -> Iterator[None]:
+    yield
+    import shutil
+
+    shutil.rmtree(_TEST_UPLOAD_ROOT, ignore_errors=True)
+
+
 @pytest.fixture
-def app(db_session: Session, clock: FakeClock):
+def storage(tmp_path) -> LocalStorage:
+    """테스트마다 새 저장 폴더."""
+    return LocalStorage(tmp_path / "uploads")
+
+
+@pytest.fixture
+def app(db_session: Session, clock: FakeClock, storage: LocalStorage):
     application = create_app()
     application.dependency_overrides[get_db] = lambda: db_session
     application.dependency_overrides[get_now] = lambda: clock.now
+    application.dependency_overrides[get_storage] = lambda: storage
     return application
 
 

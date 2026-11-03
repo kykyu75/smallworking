@@ -1,8 +1,11 @@
 # 운영(Vercel)에서도 설치되는 패키지 — DEC-008
-# 이후 단계에서 필요할 때 추가한다 — M4: Pillow, vercel(Blob SDK)
+# 이후 단계에서 필요할 때 추가한다
 fastapi
 uvicorn[standard]
 sqlalchemy>=2.0
 alembic
 psycopg[binary]
 argon2-cffi  # M2: 관리자·댓글 비밀번호 해시 (DEC-003)
+Pillow  # M4: 이미지 형식 검사·축소·썸네일 (DEC-007)
+vercel  # M4: Vercel Blob Python SDK (DEC-007)
+python-multipart  # M4: FastAPI 파일 업로드 처리. vercel SDK의 의존성으로도 설치됨

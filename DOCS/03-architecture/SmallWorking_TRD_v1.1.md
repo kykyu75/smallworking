@@ -595,6 +595,7 @@ DB 접속 정보, 관리자 인증 정보 등 환경별 설정값은 코드에 �
 > | `STORAGE_BACKEND` | `local` / `blob` |
 > | `UPLOAD_ROOT` | 로컬 저장 폴더 (개발) |
 > | `BLOB_READ_WRITE_TOKEN` | Vercel Blob 접근 토큰 (운영) |
+> | `BLOB_PUBLIC_BASE_URL` | Vercel Blob store 공개 주소. DB의 저장 키로 이미지 주소를 만든다 (운영, M4 추가 — SDK가 주소를 따로 알려주지 않음) |
 > | `ADMIN_USERNAME`, `ADMIN_PASSWORD` | 초기 관리자 생성 명령에서만 사용 |
 > | `ALLOWED_ORIGINS` | Origin 검사 허용 주소 |
 > | `CRON_SECRET` | 정리 작업 API 인증 |
