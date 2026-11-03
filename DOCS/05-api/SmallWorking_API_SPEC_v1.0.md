@@ -65,6 +65,8 @@ SQLAlchemy → PostgreSQL / File Storage
 - 쿠키는 `SameSite=Lax`로 다른 사이트에서 보내는 POST/PUT/DELETE에 포함되지 않는다.
 - 추가로 **상태를 바꾸는 요청(POST/PUT/PATCH/DELETE)은 `Origin` 헤더가 허용된 사이트 주소일 때만 처리**한다. 다르면 `403 FORBIDDEN_ORIGIN`.
 - 허용 주소는 환경변수(`ALLOWED_ORIGINS`)로 관리한다.
+- **[M2 구현 세부]** 다음도 허용한다: `Origin`의 host가 요청을 받은 사이트의 `Host`와 같을 때(같은 사이트). Vercel 미리보기 배포는 주소가 매번 달라 `ALLOWED_ORIGINS`에 미리 넣을 수 없기 때문이다.
+- **[M2 구현 세부]** `Origin` 헤더가 **없는** 상태 변경 요청은 거부한다. 브라우저는 GET/HEAD가 아닌 요청에 항상 `Origin`을 붙인다. (Cron이 호출하는 API-028은 GET이라 해당 없음)
 
 ### 2.4 라우트 선언 순서
 

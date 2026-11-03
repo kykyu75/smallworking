@@ -1,8 +1,8 @@
 # 운영(Vercel)에서도 설치되는 패키지 — DEC-008
-# M0: 웹 서버, DB, 마이그레이션. 이후 단계에서 필요할 때 추가한다
-#   M2: argon2-cffi / M4: Pillow, vercel(Blob SDK)
+# 이후 단계에서 필요할 때 추가한다 — M4: Pillow, vercel(Blob SDK)
 fastapi
 uvicorn[standard]
 sqlalchemy>=2.0
 alembic
 psycopg[binary]
+argon2-cffi  # M2: 관리자·댓글 비밀번호 해시 (DEC-003)

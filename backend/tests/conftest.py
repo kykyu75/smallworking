@@ -8,6 +8,7 @@ from __future__ import annotations
 
 import os
 from collections.abc import Iterator
+from datetime import datetime, timedelta, timezone
 
 import pytest
 
@@ -26,6 +27,7 @@ from alembic.config import Config  # noqa: E402
 from fastapi.testclient import TestClient  # noqa: E402
 from sqlalchemy.orm import Session  # noqa: E402
 
+from app.core.clock import get_now  # noqa: E402
 from app.core.config import BACKEND_DIR  # noqa: E402
 from app.core.db import get_db, get_engine  # noqa: E402
 from app.main import create_app  # noqa: E402
@@ -58,14 +60,55 @@ def db_session() -> Iterator[Session]:
         connection.close()
 
 
+class FakeClock:
+    """테스트용 시계. clock.advance(hours=2)처럼 시간을 앞으로 돌린다 (실제로 기다리지 않음)."""
+
+    def __init__(self) -> None:
+        self.now = datetime(2026, 11, 3, 9, 0, tzinfo=timezone.utc)
+
+    def advance(self, **kwargs: float) -> None:
+        self.now += timedelta(**kwargs)
+
+
 @pytest.fixture
-def app(db_session: Session):
+def clock() -> FakeClock:
+    return FakeClock()
+
+
+@pytest.fixture
+def app(db_session: Session, clock: FakeClock):
     application = create_app()
     application.dependency_overrides[get_db] = lambda: db_session
+    application.dependency_overrides[get_now] = lambda: clock.now
     return application
+
+
+# 같은 사이트에서 보낸 요청처럼 Origin을 붙인다 (Origin 검사, API_SPEC §2.3)
+SAME_ORIGIN = "http://testserver"
 
 
 @pytest.fixture
 def client(app) -> Iterator[TestClient]:
-    with TestClient(app) as test_client:
+    with TestClient(app, headers={"Origin": SAME_ORIGIN}) as test_client:
         yield test_client
+
+
+ADMIN_USERNAME = "admin"
+ADMIN_PASSWORD = "correct-horse-battery"
+
+
+@pytest.fixture
+def admin_user(db_session: Session):
+    from app.cli import create_admin
+    from app.models import AdminUser
+
+    create_admin(db_session, ADMIN_USERNAME, ADMIN_PASSWORD)
+    return db_session.query(AdminUser).filter_by(username=ADMIN_USERNAME).one()
+
+
+@pytest.fixture
+def admin_client(client: TestClient, admin_user) -> TestClient:
+    """관리자로 로그인된 클라이언트."""
+    response = client.post("/api/admin/login", json={"username": ADMIN_USERNAME, "password": ADMIN_PASSWORD})
+    assert response.status_code == 200, response.text
+    return client
