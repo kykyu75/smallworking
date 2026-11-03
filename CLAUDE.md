@@ -93,7 +93,8 @@ TEST_CASES에 TC 추가
 |---|---|
 | Frontend | React, TypeScript, Vite, React Router, Tailwind CSS, TipTap |
 | Backend | Python 3.12, FastAPI, Pydantic v2, SQLAlchemy 2.x, Alembic, psycopg(v3), argon2-cffi, Pillow, Vercel Blob Python SDK |
-| 테스트 | pytest + TestClient(httpx), Vitest + React Testing Library, Playwright |
+| 테스트 | pytest + TestClient(httpx), Vitest + React Testing Library + jsdom, Playwright |
+| 개발 도구 | uvicorn (로컬 실행), oxlint (Frontend 코드 검사) |
 | 배포 | Vercel (GitHub 연동), Neon, Vercel Blob, Vercel Cron |
 | 사용하지 않음 | 서버 데이터 캐시 라이브러리(TanStack Query 등), CSS-in-JS, 별도 UI 컴포넌트 라이브러리, JWT |
 
