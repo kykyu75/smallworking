@@ -48,6 +48,23 @@ export function sentBodies(fetchMock: ReturnType<typeof mockApi>, method: string
 
 export const UNAUTHORIZED = { error: { code: 'UNAUTHORIZED', message: '로그인이 필요합니다.', details: null } }
 
+export function postSummary(id: number, title: string, overrides: Partial<Record<string, unknown>> = {}) {
+  return {
+    id,
+    category_id: 1,
+    category_name: 'DIY',
+    title,
+    thumbnail_url: null as string | null,
+    like_count: 0,
+    comment_count: 0,
+    created_at: '2026-11-03T09:00:00Z',
+    updated_at: '2026-11-03T09:00:00Z',
+    ...overrides,
+  }
+}
+
+export const EMPTY_HOME = { categories: [], latest_posts: [], popular_posts: [] }
+
 export const DEFAULT_CATEGORIES = [
   { id: 1, name: 'DIY', description: '직접 만들어 본 것들', display_order: 1, post_count: 0 },
   { id: 2, name: 'Portfolio', description: '프로젝트와 작업물', display_order: 2, post_count: 3 },

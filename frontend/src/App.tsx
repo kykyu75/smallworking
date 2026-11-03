@@ -8,6 +8,7 @@ import { AdminAuthProvider } from './hooks/AdminAuthContext'
 import CategoryPostListPage from './pages/CategoryPostListPage'
 import HomePage from './pages/HomePage'
 import NotFoundPage from './pages/NotFoundPage'
+import PostDetailPage from './pages/PostDetailPage'
 import AdminDashboardPage from './pages/admin/AdminDashboardPage'
 import AdminLoginPage from './pages/admin/AdminLoginPage'
 import CategoryManagementPage from './pages/admin/CategoryManagementPage'
@@ -33,6 +34,7 @@ export default function App() {
         <Route element={<PublicLayout />}>
           <Route path="/" element={<HomePage />} />
           <Route path="/category/:categoryId" element={<CategoryPostListPage />} />
+          <Route path="/posts/:postId" element={<PostDetailPage />} />
           <Route path="*" element={<NotFoundPage />} />
         </Route>
 

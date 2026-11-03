@@ -40,3 +40,36 @@ class PostPage(BaseModel):
     page: int
     size: int
     total: int
+
+
+class PostList(BaseModel):
+    """페이지 없는 목록 (API-011, API-012)."""
+
+    items: list[PostSummary]
+
+
+class CategoryRef(BaseModel):
+    id: int
+    name: str
+
+
+class CategoryLatest(BaseModel):
+    """API-013"""
+
+    category: CategoryRef
+    items: list[PostSummary]
+
+
+class HomeCategory(BaseModel):
+    id: int
+    name: str
+    description: str | None
+    latest_posts: list[PostSummary]
+
+
+class HomeData(BaseModel):
+    """API-021"""
+
+    categories: list[HomeCategory]
+    latest_posts: list[PostSummary]
+    popular_posts: list[PostSummary]

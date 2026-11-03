@@ -49,6 +49,40 @@ def list_page(db: Session, category_id: int | None, page: int, size: int) -> tup
     return _rows(db.execute(query).all()), db.execute(count_query).scalar_one()
 
 
+def latest(db: Session, limit: int, category_id: int | None = None) -> list[SummaryRow]:
+    """등록일 최신순 (API-011, API-013)."""
+    query = _summary_select()
+    if category_id is not None:
+        query = query.where(Post.category_id == category_id)
+    return _rows(db.execute(query.order_by(Post.created_at.desc(), Post.id.desc()).limit(limit)).all())
+
+
+def popular(db: Session, limit: int) -> list[SummaryRow]:
+    """좋아요 많은 순, 같으면 최신 글 먼저 — 전체 기간 (API-012, DEC-006)."""
+    query = _summary_select().order_by(Post.like_count.desc(), Post.created_at.desc(), Post.id.desc()).limit(limit)
+    return _rows(db.execute(query).all())
+
+
+def latest_per_category(db: Session, per_category: int) -> dict[int, list[SummaryRow]]:
+    """카테고리마다 최신 글 N개를 한 번의 쿼리로 (API-021). 카테고리 수가 늘어도 쿼리 수는 그대로다."""
+    rank = (
+        func.row_number()
+        .over(partition_by=Post.category_id, order_by=(Post.created_at.desc(), Post.id.desc()))
+        .label("rank")
+    )
+    ranked = select(Post.id.label("post_id"), rank).subquery()
+    query = (
+        _summary_select()
+        .join(ranked, ranked.c.post_id == Post.id)
+        .where(ranked.c.rank <= per_category)
+        .order_by(Post.category_id, Post.created_at.desc(), Post.id.desc())
+    )
+    grouped: dict[int, list[SummaryRow]] = {}
+    for row in _rows(db.execute(query).all()):
+        grouped.setdefault(row.post.category_id, []).append(row)
+    return grouped
+
+
 def get_summary(db: Session, post_id: int) -> SummaryRow | None:
     rows = _rows(db.execute(_summary_select().where(Post.id == post_id)).all())
     return rows[0] if rows else None

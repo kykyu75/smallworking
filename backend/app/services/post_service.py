@@ -1,4 +1,4 @@
-"""게시글 규칙 (API-006~010, DEC-001, DEC-002, DEC-005).
+﻿"""게시글 규칙 (API-006~010, DEC-001, DEC-002, DEC-005).
 
 저장(작성·수정) 시 이미지 처리:
 1. 본문에서 imageId를 등장 순서대로 뽑는다
@@ -37,7 +37,7 @@ def _invalid_image_reference() -> AppError:
     return AppError(422, "INVALID_IMAGE_REFERENCE", "본문의 이미지 정보가 올바르지 않습니다.")
 
 
-def _summary(row: repo.SummaryRow, storage: StorageBackend) -> PostSummary:
+def summary_out(row: repo.SummaryRow, storage: StorageBackend) -> PostSummary:
     post = row.post
     return PostSummary(
         id=post.id,
@@ -59,14 +59,14 @@ def list_posts(db: Session, storage: StorageBackend, category_id: int | None, pa
     if category_id is not None and db.get(Category, category_id) is None:
         raise _category_not_found()
     rows, total = repo.list_page(db, category_id, page, size)
-    return PostPage(items=[_summary(r, storage) for r in rows], page=page, size=size, total=total)
+    return PostPage(items=[summary_out(r, storage) for r in rows], page=page, size=size, total=total)
 
 
 def get_post(db: Session, storage: StorageBackend, post_id: int, visitor_key: str | None) -> PostDetail:
     row = repo.get_summary(db, post_id)
     if row is None:
         raise _post_not_found()
-    summary = _summary(row, storage)
+    summary = summary_out(row, storage)
     return PostDetail(
         **summary.model_dump(),
         content=row.post.content,
