@@ -21,11 +21,27 @@ if not _test_url:
 os.environ["DATABASE_URL"] = _test_url
 os.environ["COOKIE_SECURE"] = "false"
 
+from alembic import command  # noqa: E402
+from alembic.config import Config  # noqa: E402
 from fastapi.testclient import TestClient  # noqa: E402
 from sqlalchemy.orm import Session  # noqa: E402
 
+from app.core.config import BACKEND_DIR  # noqa: E402
 from app.core.db import get_db, get_engine  # noqa: E402
 from app.main import create_app  # noqa: E402
+
+
+def alembic_config() -> Config:
+    return Config(str(BACKEND_DIR / "alembic.ini"))
+
+
+@pytest.fixture(scope="session", autouse=True)
+def migrated_test_database() -> Iterator[None]:
+    """테스트 실행마다 테스트 DB를 비우고 마이그레이션을 처음부터 적용한다."""
+    cfg = alembic_config()
+    command.downgrade(cfg, "base")
+    command.upgrade(cfg, "head")
+    yield
 
 
 @pytest.fixture
