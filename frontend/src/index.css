@@ -1,0 +1,6 @@
+@import "tailwindcss";
+
+/* 긴 텍스트·URL이 화면 밖으로 넘치지 않도록 (COMPONENT_SPEC §12, REQ-037) */
+body {
+  overflow-wrap: anywhere;
+}
