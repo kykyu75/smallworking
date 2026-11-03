@@ -63,6 +63,7 @@ def list_posts(db: Session, storage: StorageBackend, category_id: int | None, pa
 
 
 def get_post(db: Session, storage: StorageBackend, post_id: int, visitor_key: str | None) -> PostDetail:
+    """상세 조회. liked는 요청한 브라우저(sw_visitor)가 좋아요를 눌렀는지 (DEC-004)."""
     row = repo.get_summary(db, post_id)
     if row is None:
         raise _post_not_found()

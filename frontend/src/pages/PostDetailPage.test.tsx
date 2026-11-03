@@ -1,4 +1,4 @@
-import { render, screen, waitFor } from '@testing-library/react'
+﻿import { render, screen, waitFor } from '@testing-library/react'
 import { MemoryRouter } from 'react-router'
 import { afterEach, describe, expect, it, vi } from 'vitest'
 import App from '../App'
@@ -64,7 +64,7 @@ describe('게시글 상세 (PAGE-003)', () => {
     expect(article.querySelector('time')).toHaveAttribute('dateTime', '2026-09-15T01:00:00Z')
     expect(screen.getByText('오늘은 타일 작업을 했다.')).toBeInTheDocument()
     expect(screen.getByAltText('완성')).toHaveAttribute('src', '/uploads/images/2026/11/a.jpg')
-    expect(screen.getByLabelText('좋아요 12')).toBeInTheDocument()
+    expect(screen.getByRole('button', { name: '좋아요 (현재 12)' })).toHaveAttribute('aria-pressed', 'false')
     expect(screen.queryByText(/수정됨/)).toBeNull()
     await waitFor(() => expect(document.title).toBe('주방 타일 시공 - SmallWorking'))
     expect(screen.getAllByRole('link', { name: /DIY/ }).some((a) => a.getAttribute('href') === '/category/1')).toBe(true)

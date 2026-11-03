@@ -1,8 +1,9 @@
-// PAGE-003 PostDetailPage (COMP-030 + COMP-031 PostHeader + COMP-032 PostContent, REQ-022, REQ-040)
-// 좋아요 버튼(COMP-033)은 M7, 댓글(COMP-034~039)은 M8에서 붙인다.
+// PAGE-003 PostDetailPage (COMP-030 + COMP-031 PostHeader + COMP-032 PostContent + COMP-033 LikeButton, REQ-022, REQ-040)
+// 댓글(COMP-034~039)은 M8에서 붙인다.
 import { useEffect, useState } from 'react'
 import { Link, useParams } from 'react-router'
 import LoadingSpinner from '../components/common/LoadingSpinner'
+import LikeButton from '../components/post/LikeButton'
 import PostContent from '../components/post/PostContent'
 import { useDocumentTitle } from '../hooks/useDocumentTitle'
 import { formatDate } from '../lib/format'
@@ -91,7 +92,7 @@ export default function PostDetailPage() {
           <PostContent content={post.content} images={post.images} />
         </div>
         <footer className="mt-10 flex items-center justify-between border-t border-gray-200 pt-6 text-sm text-gray-600">
-          <span aria-label={`좋아요 ${post.like_count}`}>❤️ {post.like_count}</span>
+          <LikeButton key={post.id} postId={post.id} initialCount={post.like_count} initialLiked={post.liked} />
           <Link to={`/category/${post.category_id}`} className="hover:text-gray-900">
             {post.category_name} 목록으로 →
           </Link>
