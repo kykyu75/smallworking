@@ -6,7 +6,7 @@ Vercel:     api/index.py가 이 app을 불러온다 (M11)
 
 from fastapi import FastAPI
 
-from app.api import admin_auth, health
+from app.api import admin_auth, categories, health
 from app.core.config import get_settings
 from app.core.errors import register_error_handlers
 from app.core.origin import OriginCheckMiddleware
@@ -25,6 +25,7 @@ def create_app() -> FastAPI:
 
     app.include_router(health.router)
     app.include_router(admin_auth.router)
+    app.include_router(categories.router)
     return app
 
 

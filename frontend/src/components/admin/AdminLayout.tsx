@@ -3,7 +3,10 @@
 import { NavLink, Outlet, useNavigate } from 'react-router'
 import { useAdminAuth } from '../../hooks/useAdminAuth'
 
-const NAV_ITEMS = [{ to: '/admin', label: '대시보드', end: true }]
+const NAV_ITEMS = [
+  { to: '/admin', label: '대시보드', end: true },
+  { to: '/admin/categories', label: '카테고리', end: false },
+]
 
 function navClass({ isActive }: { isActive: boolean }) {
   return `rounded px-3 py-2 text-sm ${isActive ? 'bg-gray-900 text-white' : 'text-gray-700 hover:bg-gray-100'}`
