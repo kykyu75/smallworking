@@ -56,6 +56,7 @@ describe('게시글 상세 (PAGE-003)', () => {
     mockApi([
       { path: '/api/categories', body: { items: DEFAULT_CATEGORIES } },
       { path: '/api/posts/7', body: POST },
+      { path: '/api/posts/7/comments', body: { items: [] } },
     ])
     renderAt('/posts/7')
     expect(await screen.findByRole('heading', { level: 1, name: '주방 타일 시공' })).toBeInTheDocument()
@@ -74,6 +75,7 @@ describe('게시글 상세 (PAGE-003)', () => {
     mockApi([
       { path: '/api/categories', body: { items: DEFAULT_CATEGORIES } },
       { path: '/api/posts/7', body: { ...POST, updated_at: '2026-09-20T03:00:00Z' } },
+      { path: '/api/posts/7/comments', body: { items: [] } },
     ])
     renderAt('/posts/7')
     expect(await screen.findByText(/수정됨/)).toBeInTheDocument()

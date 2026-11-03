@@ -12,6 +12,7 @@ import PostDetailPage from './pages/PostDetailPage'
 import AdminDashboardPage from './pages/admin/AdminDashboardPage'
 import AdminLoginPage from './pages/admin/AdminLoginPage'
 import CategoryManagementPage from './pages/admin/CategoryManagementPage'
+import CommentManagementPage from './pages/admin/CommentManagementPage'
 import PostManagementPage from './pages/admin/PostManagementPage'
 
 // 에디터(TipTap)는 크기가 커서 관리자가 글쓰기 화면을 열 때만 불러온다.
@@ -52,6 +53,7 @@ export default function App() {
           <Route path="posts" element={<PostManagementPage />} />
           <Route path="posts/new" element={<EditorRoute />} />
           <Route path="posts/:postId/edit" element={<EditorRoute />} />
+          <Route path="comments" element={<CommentManagementPage />} />
           <Route path="*" element={<NotFoundPage />} />
         </Route>
       </Routes>

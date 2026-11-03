@@ -1,7 +1,8 @@
 // PAGE-003 PostDetailPage (COMP-030 + COMP-031 PostHeader + COMP-032 PostContent + COMP-033 LikeButton, REQ-022, REQ-040)
-// 댓글(COMP-034~039)은 M8에서 붙인다.
+// + COMP-034 CommentSection (M8)
 import { useEffect, useState } from 'react'
 import { Link, useParams } from 'react-router'
+import CommentSection from '../components/comment/CommentSection'
 import LoadingSpinner from '../components/common/LoadingSpinner'
 import LikeButton from '../components/post/LikeButton'
 import PostContent from '../components/post/PostContent'
@@ -98,6 +99,7 @@ export default function PostDetailPage() {
           </Link>
         </footer>
       </article>
+      <CommentSection key={post.id} postId={post.id} />
     </main>
   )
 }

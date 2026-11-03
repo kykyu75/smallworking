@@ -6,6 +6,7 @@ const SHORTCUTS = [
   { to: '/admin/posts/new', label: '새 글 쓰기', description: '본문 중간에 사진을 넣어 글 작성' },
   { to: '/admin/posts', label: '게시글 관리', description: '목록·수정·삭제' },
   { to: '/admin/categories', label: '카테고리 관리', description: '추가·수정·삭제·순서 변경' },
+  { to: '/admin/comments', label: '댓글 관리', description: '부적절한 댓글 삭제' },
 ]
 
 export default function AdminDashboardPage() {
