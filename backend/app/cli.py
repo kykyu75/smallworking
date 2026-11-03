@@ -2,6 +2,7 @@
 
 사용법 (backend 폴더에서):
     .venv\\Scripts\\python -m app.cli create-admin
+    .venv\\Scripts\\python -m app.cli cleanup      # 정리 작업 (운영은 Vercel Cron → API-028)
 
 운영(Neon)에 실행할 때는 DATABASE_URL을 운영 주소로 지정한 뒤 실행한다.
 """
@@ -50,14 +51,32 @@ def _cmd_create_admin() -> int:
     return 0
 
 
+def _cmd_cleanup() -> int:
+    from app.core.clock import utc_now
+    from app.services.cleanup_service import run_cleanup
+    from app.storage import get_storage
+
+    load_env_file()
+    with get_sessionmaker()() as db:
+        result = run_cleanup(db, get_storage(), utc_now())
+    print(
+        f"임시 이미지 {result.deleted_temp_images}개, 고아 파일 {result.deleted_orphan_files}개, "
+        f"만료 세션 {result.deleted_sessions}개를 정리했습니다."
+    )
+    return 0
+
+
 def main(argv: list[str] | None = None) -> int:
     parser = argparse.ArgumentParser(prog="python -m app.cli", description="SmallWorking 관리 명령")
     sub = parser.add_subparsers(dest="command", required=True)
     sub.add_parser("create-admin", help="환경변수 ADMIN_USERNAME/ADMIN_PASSWORD로 최초 관리자 생성")
+    sub.add_parser("cleanup", help="24시간 지난 임시 이미지·고아 파일·만료 세션 정리")
     args = parser.parse_args(argv)
 
     if args.command == "create-admin":
         return _cmd_create_admin()
+    if args.command == "cleanup":
+        return _cmd_cleanup()
     return 1
 
 

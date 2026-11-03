@@ -2,9 +2,11 @@
 
 from __future__ import annotations
 
+from collections.abc import Iterator
+from datetime import datetime, timezone
 from pathlib import Path
 
-from app.storage.base import StorageError
+from app.storage.base import StorageError, StoredFile
 
 PUBLIC_PREFIX = "/uploads"
 
@@ -43,3 +45,13 @@ class LocalStorage:
 
     def exists(self, key: str) -> bool:
         return self._path(key).is_file()
+
+    def list_files(self, prefix: str) -> Iterator[StoredFile]:
+        base = self._path(prefix)
+        if not base.exists():
+            return
+        for path in sorted(base.rglob("*")):
+            if path.is_file():
+                key = path.relative_to(self.root).as_posix()
+                modified = datetime.fromtimestamp(path.stat().st_mtime, tz=timezone.utc)
+                yield StoredFile(key=key, modified_at=modified)
