@@ -9,6 +9,7 @@ const NAV_ITEMS = [
   { to: '/admin/categories', label: '카테고리', end: false },
   { to: '/admin/posts', label: '게시글', end: false },
   { to: '/admin/comments', label: '댓글', end: false },
+  { to: '/admin/requests', label: '요청', end: false }, // DEC-011
 ]
 
 function navClass({ isActive }: { isActive: boolean }) {

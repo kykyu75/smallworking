@@ -25,13 +25,13 @@ PostgreSQL                             →  Neon
 | 문서 | 경로 | 역할 |
 |---|---|---|
 | PRD | `DOCS/01-product/SmallWorking_PRD_v1.0.md` | 무엇을 만드는가, 범위 |
-| REQUIREMENTS | `DOCS/02-requirements/SmallWorking_REQUIREMENTS_v1.1.md` | REQ-001~044 |
+| REQUIREMENTS | `DOCS/02-requirements/SmallWorking_REQUIREMENTS_v1.1.md` | REQ-001~049 |
 | TRD | `DOCS/03-architecture/SmallWorking_TRD_v1.1.md` | 기술 스택, 아키텍처, 배포, 환경변수 |
 | DATA_MODEL | `DOCS/04-data/SmallWorking_DATA_MODEL_v1.0.md` | 테이블, 제약조건, 삭제 정책 |
-| API_SPEC | `DOCS/05-api/SmallWorking_API_SPEC_v1.0.md` | API-001~028, 오류 코드 |
+| API_SPEC | `DOCS/05-api/SmallWorking_API_SPEC_v1.0.md` | API-001~038, 오류 코드 |
 | COMPONENT_SPEC | `DOCS/06-ui/SmallWorking_COMPONENT_SPEC_v1.0.md` | 화면, COMP-xxx, 타입 |
 | TEST_CASES | `DOCS/07-testing/SmallWorking_TEST_CASES_v1.0.md` | TC-xxx, Definition of Done |
-| DECISIONS | `DOCS/SmallWorking_DECISIONS.md` | DEC-001~010, 결정 이유 |
+| DECISIONS | `DOCS/SmallWorking_DECISIONS.md` | DEC-001~011, 결정 이유 |
 
 - **항상 가장 높은 버전 파일**을 읽는다. 이전 버전(v0.1 등)은 기록용이며 구현 기준이 아니다.
 - 문서끼리 충돌하면 우선순위: **DECISIONS > DATA_MODEL / API_SPEC / COMPONENT_SPEC > TRD > REQUIREMENTS > PRD**. 그래도 애매하면 사용자에게 묻는다.
@@ -292,3 +292,4 @@ SmallWorking/
 | 2026-11-03 | 최초 작성 (PRD v1.0, REQUIREMENTS v1.1, TRD v1.1, DATA_MODEL·API_SPEC·COMPONENT_SPEC·TEST_CASES v1.0, DEC-001~008 기준) |
 | 2026-11-04 | DEC-009 반영: 문서 표 DEC-001~009, 기술 스택에 `@tiptap/markdown` 추가 |
 | 2026-11-04 | DEC-010 반영: 본문 표, 기술 스택에 `@tiptap/extension-table` 추가 |
+| 2026-11-04 | DEC-011 반영: 요청 게시판 (REQ-045~049, API-029~038, `visitor_request`) |

@@ -7,7 +7,7 @@ Vercel:     api/index.py가 이 app을 불러온다 (M11)
 from fastapi import FastAPI
 from fastapi.staticfiles import StaticFiles
 
-from app.api import admin_auth, categories, comments, cron, health, home, images, likes, posts
+from app.api import admin_auth, categories, comments, cron, health, home, images, likes, posts, requests
 from app.core.config import get_settings
 from app.core.errors import register_error_handlers
 from app.core.headers import SecurityHeadersMiddleware
@@ -35,6 +35,7 @@ def create_app() -> FastAPI:
     app.include_router(posts.router)
     app.include_router(likes.router)
     app.include_router(comments.router)
+    app.include_router(requests.router)  # DEC-011 요청 게시판
     app.include_router(home.router)
     app.include_router(cron.router)
 

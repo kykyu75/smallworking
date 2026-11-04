@@ -60,6 +60,9 @@ React 구현
 | PAGE-002 | `/category/:categoryId?page=n` | CategoryPostListPage | 카테고리별 게시글 목록 | REQ-023 |
 | PAGE-003 | `/posts/:postId` | PostDetailPage | 게시글 상세, 좋아요, 댓글 | REQ-022, 024~030 |
 | PAGE-004 | `*` | NotFoundPage | 존재하지 않는 페이지/콘텐츠 | REQ-040 |
+| PAGE-005 | `/requests?page=n` | RequestBoardPage | 요청 게시판 목록 (DEC-011) | REQ-046 |
+| PAGE-006 | `/requests/new` | RequestWritePage | 요청 작성 | REQ-045 |
+| PAGE-007 | `/requests/:requestId` | RequestDetailPage | 요청 상세, 비밀글 열람, 수정·삭제, 답변 보기 | REQ-047, 048 |
 
 ### 3.2 관리자 화면 (Admin)
 
@@ -72,6 +75,7 @@ React 구현
 | PAGE-105 | `/admin/posts/new` | PostEditorPage | 게시글 작성 | REQ-014, 015, 018~020 |
 | PAGE-106 | `/admin/posts/:postId/edit` | PostEditorPage | 게시글 수정 (작성 화면 재사용) | REQ-016 |
 | PAGE-107 | `/admin/comments?page=n` | CommentManagementPage | 댓글·답글 조회 및 삭제 | REQ-035 |
+| PAGE-108 | `/admin/requests?status=&page=n` | RequestManagementPage | 요청 조회, 답변 작성·수정·삭제, 요청 삭제 (DEC-011) | REQ-049 |
 
 > `/admin/*`(로그인 화면 제외)은 COMP-100 RequireAdmin이 API-025로 로그인 상태를 확인한다. 실제 권한 판단은 Backend에서 한다.
 
@@ -492,6 +496,27 @@ HomePage
 - 삭제 ConfirmDialog: 답글이 있는 댓글이면 "답글 N개는 유지되고 '삭제된 댓글입니다'로 표시됩니다."라고 안내 (DEC-005)
 - 비밀번호 입력 없이 삭제한다.
 
+### 9.7 요청 게시판 (DEC-011, PAGE-005~007, PAGE-108)
+
+| ID | 컴포넌트 | 역할 | API | REQ |
+|---|---|---|---|---|
+| COMP-006 | RequestMenuLink | 공개 메뉴(가로·햄버거) 맨 끝 **"요청하기"** → `/requests` | — | REQ-046 |
+| COMP-040 | RequestBoardPage | 목록 (최신순 12개/페이지, `?page=n`), [요청 남기기] 버튼 | API-029 | REQ-046 |
+| COMP-041 | RequestListItem | 종류 배지, 제목(비밀글은 "🔒 비밀글입니다"), 닉네임, 작성일, 상태 배지(접수 / 답변 완료) | — | REQ-046 |
+| COMP-042 | RequestForm | 종류 선택, 제목(글자 수), 내용(글자 수), 닉네임, 비밀번호, 비밀글 체크. 작성·수정에 같이 사용 (수정 때는 닉네임 숨김) | API-030, API-033 | REQ-045, 048 |
+| COMP-043 | RequestDetailPage | 상세. `locked`면 비밀번호 입력란(COMP-044), 열면 제목·내용·답변. [수정][삭제] (답변이 있으면 수정 버튼 대신 "답변이 달려 수정할 수 없습니다") | API-031, 032, 034 | REQ-047, 048 |
+| COMP-044 | SecretUnlockForm | 비밀번호 입력 → API-032. 실패·잠금 메시지는 서버 메시지 그대로 | API-032 | REQ-047 |
+| COMP-045 | RequestAnswer | 운영자 답변 상자 ("SmallWorking 답변", 답변 시각) | — | REQ-049 |
+| COMP-150 | RequestManagementPage | 상태 탭(전체 / 접수 / 답변 완료), 최신순 20개/페이지, 요청 카드(비밀글 표시, 전체 내용) | API-035 | REQ-049 |
+| COMP-151 | AnswerEditor | 답변 입력(1~2,000자) [답변 저장] / [답변 삭제], 요청 [삭제] (ConfirmDialog) | API-036~038 | REQ-049 |
+
+- 작성 후에는 작성 응답(내용 포함)으로 상세 화면을 바로 보여준다. 비밀글이어도 이때는 비밀번호를 다시 묻지 않는다.
+- 수정은 상세 화면 안에서 RequestForm을 연다. 저장할 때 비밀번호를 함께 보낸다.
+- 삭제는 PasswordDialog(COMP-039 재사용) → 목록으로 이동.
+- 운영자가 로그인한 상태에서 공개 상세 화면을 열면 비밀글도 바로 보인다 (API-031).
+- 대시보드(PAGE-102)에 **"새 요청 N건"** 바로가기 (API-035 `open_count`). 관리자 메뉴에 **"요청"** 추가.
+- 내용·답변은 일반 텍스트로 표시한다 (줄바꿈 유지, `whitespace-pre-wrap`, 긴 글자 줄바꿈).
+
 ---
 
 ## 10. 공통 UI 컴포넌트
@@ -769,6 +794,7 @@ Claude.md
 | 버전 | 날짜 | 내용 |
 |---|---|---|
 | 0.1 | 2026-11-03 | 초기 화면·컴포넌트 구조 초안 작성 (이전 초안 유실로 재작성) |
+| 1.0 (개정) | 2026-11-04 | DEC-011 반영: 요청 게시판 PAGE-005~007·108, §9.7 COMP-006·040~045·150·151 |
 | 1.0 (개정) | 2026-11-04 | DEC-010 반영: 본문 표 — 툴바 [표 넣기]·표 편집 버튼(COMP-135), PostContent 표 렌더링(§8.3), 붙여넣기 표 유지 |
 | 1.0 (개정) | 2026-11-04 | DEC-009 반영: COMP-132 붙여넣기 시 Markdown 원문·HTML 소스를 서식으로 변환 |
 | 1.0 (개정) | 2026-11-03 | DEC-007, 008 반영: Tailwind CSS·React Router 확정, 업로드 전 브라우저 축소(1920px, 4MB 확인), 이미지 주소는 응답 `url` 사용, 로컬 개발 프록시 |

@@ -38,6 +38,12 @@ export default function MobileMenu({ categories }: { categories: Category[] }) {
                 </NavLink>
               </li>
             ))}
+            {/* COMP-006 요청 게시판 (DEC-011) */}
+            <li className="border-t border-gray-100">
+              <NavLink to="/requests" onClick={() => setOpenedAt(null)} className="block py-3 text-gray-800">
+                요청하기
+              </NavLink>
+            </li>
           </ul>
         </nav>
       )}

@@ -9,5 +9,6 @@ from app.models.comment import Comment
 from app.models.post import Post
 from app.models.post_image import PostImage
 from app.models.post_like import PostLike
+from app.models.visitor_request import VisitorRequest
 
-__all__ = ["AdminSession", "AdminUser", "Category", "Comment", "Post", "PostImage", "PostLike"]
+__all__ = ["AdminSession", "AdminUser", "Category", "Comment", "Post", "PostImage", "PostLike", "VisitorRequest"]
