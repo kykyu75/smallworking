@@ -15,9 +15,9 @@
 
 1. https://vercel.com 에서 **GitHub 계정으로 가입** (Hobby 무료 플랜).
 2. **Add New → Project** → `kykyu75/smallworking` 저장소 **Import**.
-3. 설정 화면에서 **Root Directory는 비워 둔다**(저장소 맨 위). 나머지는 그대로 두고 **Deploy**.
-   - 이때 `main`에는 아직 배포 설정(`vercel.json`)이 없어서 **첫 배포는 실패하거나 빈 화면**이어도 괜찮다. 나중에 병합하면 바뀐다.
-4. 프로젝트 **Settings → Functions → Function Region**을 **Singapore (sin1)**로 바꾼다 (DB와 같은 지역).
+3. 설정 화면에서 **Root Directory는 `./`**(저장소 맨 위) 그대로. **Application Preset은 `Services`**로 자동 선택되고 `backend`(FastAPI, `/api`)와 `frontend`(Vite, `/`)가 보인다. 환경변수는 나중에 넣으므로 비워 두고 **Deploy**.
+   - 이때 `main`에는 아직 배포 설정(`vercel.json`)과 DB·환경변수가 없어서 **첫 배포는 실패하거나 화면만 뜨고 API가 안 돼도** 괜찮다. 나중에 병합하면 바뀐다.
+4. 함수 지역(Singapore `sin1`)은 `vercel.json`의 `regions`에 넣어 두었으므로 따로 바꿀 필요 없다. (대시보드에서는 프로젝트를 만든 뒤 **Settings → Functions → Function Regions**에 있다.)
 
 ## 2단계 — Neon 데이터베이스 연결 👤
 

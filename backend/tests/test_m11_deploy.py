@@ -81,6 +81,7 @@ def test_forwarded_host_counts_as_same_site(app):
 
 def test_vercel_json_routes_api_to_backend_and_cron_is_daily():
     config = json.loads((ROOT / "vercel.json").read_text(encoding="utf-8"))
+    assert config["regions"] == ["sin1"]  # Neon Singapore와 같은 지역 (Hobby는 1개 지역)
     services = config["services"]
     assert services["api"]["root"] == "backend/" and services["api"]["entrypoint"] == "app.main:app"
     assert services["web"]["root"] == "frontend/"

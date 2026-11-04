@@ -568,7 +568,7 @@ Vercel (하나의 프로젝트, 하나의 도메인)
 | 마이그레이션·관리자 생성 | Neon **직접 연결 주소**(`DATABASE_URL_UNPOOLED`)로 로컬에서 `alembic upgrade head`, `create-admin` 실행 (배포 가이드 절차) |
 | Origin 검사 | Vercel이 공개 주소를 `x-forwarded-host`로 전달하므로 `Host`와 함께 같은 사이트로 인정한다 (브라우저 Origin은 페이지가 바꿀 수 없어 안전) |
 | 미리보기 DB | Neon 연동의 **미리보기 브랜치**(배포마다 운영 DB 복사본) 사용 — 미리보기 확인이 운영 데이터를 바꾸지 않게 |
-| 지역 | 함수와 DB를 같은 지역에 둔다 (권장: Neon Singapore `aws-ap-southeast-1` + Vercel 함수 `sin1`) |
+| 지역 | 함수와 DB를 같은 지역에 둔다: Neon Singapore `aws-ap-southeast-1` + Vercel 함수 `sin1` (`vercel.json`의 `regions`, Hobby는 1개 지역) |
 | 병합 정책 | Vercel 연결 후 `main` 병합 = 운영 배포이므로 **배포가 함께 일어나는 병합은 매번 사용자 확인** (M10까지의 "테스트 통과 시 자동 병합"은 종료) |
 
 - 확인되지 않은 점 (미리보기 배포에서 확인, TC-DEP): Services + Cron 조합, Vite 서비스의 SPA 주소 처리, 풀러 연결의 시간대. 안 되면 사용자에게 알리고 `api/` 폴더 방식으로 바꾼다.
