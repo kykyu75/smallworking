@@ -34,9 +34,12 @@ class OriginCheckMiddleware:
 
         headers = {k.decode("latin-1").lower(): v.decode("latin-1") for k, v in scope["headers"]}
         origin = headers.get("origin", "").rstrip("/").lower()
-        host = headers.get("host", "").lower()
+        # Vercel은 공개 주소를 x-forwarded-host로도 전달한다 (DEC-012). 둘 중 하나와 같으면 같은 사이트다.
+        # 브라우저 요청의 Origin은 페이지가 바꿀 수 없으므로 다른 사이트가 이 검사를 통과할 수 없다.
+        hosts = {headers.get("host", "").lower(), headers.get("x-forwarded-host", "").split(",")[0].strip().lower()}
+        hosts.discard("")
 
-        if origin and (origin in self.allowed or _host_of(origin) == host):
+        if origin and (origin in self.allowed or _host_of(origin) in hosts):
             await self.app(scope, receive, send)
             return
 

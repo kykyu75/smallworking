@@ -529,6 +529,18 @@ SmallWorking/
 >
 > - `backend/uploads/`는 **개발 환경 전용**이며 Git에 올리지 않는다.
 > - 정확한 `vercel.json` 내용과 진입점 구성은 구현 단계에서 Vercel 공식 문서를 기준으로 확정한다.
+>
+> **[M11 확정, DEC-012] Vercel Services 방식** — 위의 `api/index.py`는 만들지 않는다.
+>
+> ```text
+> SmallWorking/
+> ├── vercel.json        # services(web=frontend/, api=backend/), /api/* → api, 나머지 → web, crons
+> ├── backend/
+> │   ├── .python-version   # 3.12
+> │   ├── requirements.txt  # 운영 패키지 (버전 고정)
+> │   └── app/main.py       # 진입점 app.main:app
+> └── frontend/             # Vite 빌드 (dist), 화면 주소는 index.html로 (SPA)
+> ```
 
 ---
 
@@ -591,7 +603,8 @@ DB 접속 정보, 관리자 인증 정보 등 환경별 설정값은 코드에 �
 >
 > | 변수 | 용도 |
 > |---|---|
-> | `DATABASE_URL` | PostgreSQL 접속 정보 |
+> | `DATABASE_URL` | PostgreSQL 접속 정보 (운영: Neon 연동이 넣어 주는 **풀러 주소**. `postgres://` 형식도 받는다 — DEC-012) |
+> | `DATABASE_URL_UNPOOLED` | Neon 직접 연결 주소 — 마이그레이션·관리 명령 실행용 (앱은 사용하지 않음, DEC-012) |
 > | `STORAGE_BACKEND` | `local` / `blob` |
 > | `UPLOAD_ROOT` | 로컬 저장 폴더 (개발) |
 > | `BLOB_READ_WRITE_TOKEN` | Vercel Blob 접근 토큰 (운영) |
@@ -641,7 +654,8 @@ Backend API
 > | 배포 방식 | GitHub 연동. `main` push → 운영 배포, 다른 브랜치 → 미리보기 배포 |
 > | Reverse Proxy | 별도로 두지 않음 (Vercel이 라우팅) |
 > | HTTPS / 도메인 | Vercel 기본 제공 |
-> | DB 마이그레이션 | 배포 전에 `alembic upgrade head`를 별도 실행 (함수 실행 중 자동 실행 안 함) |
+> | DB 마이그레이션 | 배포 전에 `alembic upgrade head`를 별도 실행 (함수 실행 중 자동 실행 안 함). **[DEC-012]** Neon 직접 연결 주소로 로컬에서 실행 — 절차는 `DOCS/08-deploy/SmallWorking_DEPLOY_GUIDE.md` |
+> | 실행 구조 | **[DEC-012]** Vercel Services: `web`(frontend/) + `api`(backend/, FastAPI). 함수 지역은 DB와 가까운 곳으로 |
 > | 관리자 초기 계정 | 관리 명령으로 1회 생성 |
 > | 플랜 | Hobby(무료)로 시작. 제한에 걸리면 Pro 검토 |
 >
@@ -812,6 +826,7 @@ PostgreSQL Image Metadata
 | v0.1 | 기술 후보 검토 |
 | v1.0 | SmallWorking 초기 기술 스택 및 아키텍처 확정 |
 | **v1.1** | DEC-001~008 반영: TipTap·JSONB, 관리자 세션 인증, Argon2, 이미지 처리 정책, Alembic 확정, **Vercel 배포·Vercel Blob 이미지 저장(서버 파일 시스템에서 변경)·Neon·Cron**, 개발 도구·Tailwind CSS, TBD 표 갱신 (2026-11-03) |
+| v1.1 (개정) | 2026-11-04 DEC-012 반영: Vercel Services 구조(api/index.py 없음), Neon 풀러·직접 연결 구분, `DATABASE_URL_UNPOOLED`, 배포 가이드 문서 |
 | v1.x | 기존 기술 구조의 보완 |
 | v2.0 | 주요 기술 구조 변경 또는 대규모 확장 |
 

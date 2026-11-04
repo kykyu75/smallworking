@@ -16,8 +16,24 @@ BACKEND_DIR = Path(__file__).resolve().parents[2]
 ENV_FILE = BACKEND_DIR / ".env"
 
 
-def load_env_file(path: Path = ENV_FILE) -> None:
+def env_file_path() -> Path:
+    """읽을 설정 파일. SW_ENV_FILE이 있으면 그 파일**만** 읽는다 (DEC-012).
+
+    운영 DB에 마이그레이션·관리자 생성을 할 때 `SW_ENV_FILE=.env.neon`처럼 지정한다.
+    이때 개발용 backend/.env는 읽지 않으므로, 빠진 값이 개발 값으로 채워지는 사고를 막는다.
+    """
+    custom = os.environ.get("SW_ENV_FILE", "").strip()
+    if not custom:
+        return ENV_FILE
+    path = Path(custom)
+    return path if path.is_absolute() else BACKEND_DIR / path
+
+
+def load_env_file(path: Path | None = None) -> None:
     """KEY=VALUE 형식의 .env 파일을 읽어 os.environ에 없는 값만 설정한다."""
+    path = path or env_file_path()
+    if os.environ.get("SW_ENV_FILE") and not path.is_file():
+        raise RuntimeError(f"SW_ENV_FILE로 지정한 파일이 없습니다: {path}")
     if not path.is_file():
         return
     # utf-8-sig: Windows PowerShell이 만든 BOM이 있어도 읽을 수 있게 한다
@@ -36,6 +52,14 @@ def _bool(value: str | None, default: bool) -> bool:
     if value is None or value == "":
         return default
     return value.strip().lower() in {"1", "true", "yes", "on"}
+
+
+def normalize_database_url(url: str) -> str:
+    """Neon·Vercel이 주는 `postgres://` / `postgresql://` 주소를 psycopg(v3) 드라이버 주소로 바꾼다 (DEC-012)."""
+    for prefix in ("postgres://", "postgresql://"):
+        if url.startswith(prefix):
+            return "postgresql+psycopg://" + url[len(prefix):]
+    return url
 
 
 def _list(value: str | None) -> tuple[str, ...]:
@@ -67,7 +91,7 @@ class Settings:
             upload_root = BACKEND_DIR / upload_root
 
         return cls(
-            database_url=database_url,
+            database_url=normalize_database_url(database_url),
             storage_backend=os.environ.get("STORAGE_BACKEND", "local"),
             upload_root=upload_root,
             blob_read_write_token=os.environ.get("BLOB_READ_WRITE_TOKEN", ""),
