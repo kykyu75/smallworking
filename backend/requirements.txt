@@ -1,11 +1,10 @@
-# 운영(Vercel)에서도 설치되는 패키지 — DEC-008
-# 이후 단계에서 필요할 때 추가한다
-fastapi
-uvicorn[standard]
-sqlalchemy>=2.0
-alembic
-psycopg[binary]
-argon2-cffi  # M2: 관리자·댓글 비밀번호 해시 (DEC-003)
-Pillow  # M4: 이미지 형식 검사·축소·썸네일 (DEC-007)
-vercel  # M4: Vercel Blob Python SDK (DEC-007)
-python-multipart  # M4: FastAPI 파일 업로드 처리. vercel SDK의 의존성으로도 설치됨
+# Packages installed in production (Vercel) - DEC-008, DEC-012
+# Versions are pinned to what passed the tests. Update them on purpose and re-run the tests.
+fastapi==0.162.0
+sqlalchemy==2.1.6
+alembic==1.20.1
+psycopg[binary]==3.3.6
+argon2-cffi==25.1.0  # M2: admin and comment password hashing (DEC-003)
+pillow==13.0.0  # M4: image format check, resize, thumbnails (DEC-007)
+vercel==0.12.2  # M4: Vercel Blob Python SDK (DEC-007)
+python-multipart==0.0.33  # M4: FastAPI file upload parsing
