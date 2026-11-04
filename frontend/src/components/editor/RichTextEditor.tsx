@@ -1,5 +1,6 @@
 // COMP-132 RichTextEditor — TipTap (DEC-001, REQ-018, REQ-019)
 // 텍스트·서식 입력, 커서 위치에 이미지 삽입, 이미지 끌어서 이동.
+import { Markdown } from '@tiptap/markdown'
 import { EditorContent, useEditor } from '@tiptap/react'
 import StarterKit from '@tiptap/starter-kit'
 import { useMemo, useState } from 'react'
@@ -9,6 +10,7 @@ import type { TiptapDoc } from '../../types/post'
 import ImageUploadButton from '../admin/ImageUploadButton'
 import EditorToolbar from './EditorToolbar'
 import { BodyImage } from './imageNode'
+import { MarkdownTableAsText, PasteFormats } from './pasteExtension'
 
 interface RichTextEditorProps {
   initialContent: TiptapDoc
@@ -44,6 +46,11 @@ export default function RichTextEditor({
         },
       }),
       BodyImage.configure({ resolveUrl: (id) => imageMap.get(id)?.url }),
+      // DEC-009: Markdown 원문·HTML 소스 붙여넣기 → 서식 변환
+      // breaks: 한 줄 바꿈도 줄바꿈으로 살린다 (일반 글처럼 붙여 넣은 줄이 합쳐지지 않게)
+      Markdown.configure({ markedOptions: { gfm: true, breaks: true } }),
+      MarkdownTableAsText,
+      PasteFormats,
     ],
     [imageMap],
   )
