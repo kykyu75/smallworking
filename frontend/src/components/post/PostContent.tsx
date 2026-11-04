@@ -102,6 +102,28 @@ export default function PostContent({ content, images }: PostContentProps) {
           </figure>
         )
       }
+      // DEC-010 표: 표 안에서만 가로로 밀어 보고, 페이지는 넘치지 않는다 (REQ-036)
+      case 'table':
+        return (
+          <div key={key} className="table-scroll" role="region" aria-label="표" tabIndex={0}>
+            <table>
+              <tbody>{children(node, key)}</tbody>
+            </table>
+          </div>
+        )
+      case 'tableRow':
+        return <tr key={key}>{children(node, key)}</tr>
+      case 'tableHeader':
+      case 'tableCell': {
+        const Cell = node.type === 'tableHeader' ? 'th' : 'td'
+        const align = node.attrs?.align
+        const alignClass = align === 'center' ? 'text-center' : align === 'right' ? 'text-right' : undefined
+        return (
+          <Cell key={key} className={alignClass} scope={node.type === 'tableHeader' ? 'col' : undefined}>
+            {children(node, key)}
+          </Cell>
+        )
+      }
       default:
         return null // 모르는 노드는 그리지 않는다
     }

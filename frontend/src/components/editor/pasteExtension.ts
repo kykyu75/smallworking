@@ -2,16 +2,18 @@
 // Markdown 원문·HTML 소스를 붙여 넣으면 서식으로 바꿔 커서 위치에 넣는다.
 // 그 외(서식 있는 복사, 일반 글, 코드블록 안)는 TipTap 기본 붙여넣기에 맡긴다.
 import '@tiptap/markdown' // editor.markdown 타입
-import { DOMParser as SchemaParser, type Schema } from '@tiptap/pm/model'
+import { DOMParser as SchemaParser, Slice, type Schema } from '@tiptap/pm/model'
 import { Plugin, PluginKey } from '@tiptap/pm/state'
-import { Extension, type JSONContent, type MarkdownToken } from '@tiptap/react'
+import { Extension, type JSONContent } from '@tiptap/react'
 import {
   choosePasteFormat,
   remapHeadingsInHtml,
   remapHeadingsInMarkdown,
   sanitizePastedDoc,
+  unnestTablesInHtml,
 } from '../../lib/pasteFormats'
 import type { TiptapNode } from '../../types/post'
+import { flattenCellSpans } from './tableNodes'
 
 /**
  * HTML 소스 → 문서 JSON. 브라우저 DOMParser가 만든 문서는 화면에 붙지 않아 스크립트·이미지 로딩이 일어나지 않는다.
@@ -22,31 +24,6 @@ function parseHtmlSource(html: string, schema: Schema): JSONContent {
   return SchemaParser.fromSchema(schema).parse(body).toJSON() as JSONContent
 }
 
-interface TableCellToken {
-  tokens?: MarkdownToken[]
-}
-
-/**
- * 표는 허용 서식이 아니다 (DATA_MODEL §5.4). 그냥 두면 표가 통째로 사라지므로,
- * 한 줄에 한 행씩 "칸 | 칸" 문단으로 바꿔 글자를 살린다.
- */
-export const MarkdownTableAsText = Extension.create({
-  name: 'markdownTableAsText',
-  markdownTokenName: 'table',
-  parseMarkdown: (token, helpers) => {
-    const header = (token.header ?? []) as TableCellToken[]
-    const rows = (token.rows ?? []) as TableCellToken[][]
-    return [header, ...rows].map((cells) => {
-      const content: JSONContent[] = []
-      cells.forEach((cell, index) => {
-        if (index > 0) content.push(helpers.createTextNode(' | '))
-        content.push(...helpers.parseInline(cell.tokens ?? []))
-      })
-      return helpers.createNode('paragraph', undefined, content)
-    })
-  },
-})
-
 export const PasteFormats = Extension.create({
   name: 'pasteFormats',
 
@@ -56,6 +33,9 @@ export const PasteFormats = Extension.create({
       new Plugin({
         key: new PluginKey('pasteFormats'),
         props: {
+          // 서식 있는 복사(웹페이지 표 등)도 칸 합치기·너비는 없앤다 (DEC-010)
+          transformPastedHTML: (html) => unnestTablesInHtml(html), // 표 안의 표는 문단으로 푼다
+          transformPasted: (slice) => new Slice(flattenCellSpans(slice.content), slice.openStart, slice.openEnd),
           handlePaste: (view, event) => {
             const data = event.clipboardData
             if (!data) return false
@@ -70,7 +50,7 @@ export const PasteFormats = Extension.create({
               parsed =
                 format === 'markdown'
                   ? editor.markdown?.parse(remapHeadingsInMarkdown(text))
-                  : parseHtmlSource(remapHeadingsInHtml(text), editor.schema)
+                  : parseHtmlSource(unnestTablesInHtml(remapHeadingsInHtml(text)), editor.schema)
             } catch {
               return false // 해석하지 못하면 기본 붙여넣기
             }

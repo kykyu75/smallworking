@@ -108,3 +108,38 @@ describe('PostContent (COMP-032)', () => {
     expect(container.innerHTML).not.toContain('<b>x</b>')
   })
 })
+
+describe('PostContent 표 (DEC-010, TC-POST-029)', () => {
+  it('제목 칸·일반 칸·정렬을 그리고, 표는 가로 스크롤 상자 안에 있다', () => {
+    const cell = (type: string, text: string, align?: string): TiptapNode => ({
+      type,
+      attrs: align ? { align } : undefined,
+      content: [p(t(text))],
+    })
+    const { container } = render(
+      <PostContent
+        images={[]}
+        content={{
+          type: 'doc',
+          content: [
+            {
+              type: 'table',
+              content: [
+                { type: 'tableRow', content: [cell('tableHeader', '재료'), cell('tableHeader', '수량', 'right')] },
+                { type: 'tableRow', content: [cell('tableCell', '<script>원목</script>', 'center'), cell('tableCell', '2', 'right')] },
+              ],
+            },
+          ],
+        }}
+      />,
+    )
+    const region = screen.getByRole('region', { name: '표' })
+    expect(region).toHaveClass('table-scroll')
+    expect(screen.getAllByRole('columnheader').map((th) => th.textContent)).toEqual(['재료', '수량'])
+    const cells = screen.getAllByRole('cell')
+    expect(cells.map((td) => td.textContent)).toEqual(['<script>원목</script>', '2'])
+    expect(cells[0]).toHaveClass('text-center')
+    expect(cells[1]).toHaveClass('text-right')
+    expect(container.querySelector('script')).toBeNull() // 글자로만 보인다 (TC-SEC-015)
+  })
+})

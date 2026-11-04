@@ -21,6 +21,7 @@ const MARKDOWN_PATTERNS: readonly RegExp[] = [
   /^\s{0,3}(```|~~~)/m, // 코드블록
   /^\s{0,3}>\s?\S/m, // 인용
   /^\s{0,3}([-*_])(\s*\1){2,}\s*$/m, // 구분선
+  /^\s*\|?\s*:?-{3,}:?\s*(\|\s*:?-{3,}:?\s*)+\|?\s*$/m, // 표 구분 줄 (|---|---|)
   /\*\*[^*\n]+\*\*|__[^_\n]+__/, // 굵게
   /~~[^~\n]+~~/, // 취소선
   /\[[^\]\n]+\]\([^)\s]+\)/, // 링크
@@ -60,6 +61,34 @@ export function remapHeadingsInMarkdown(markdown: string): string {
     .join('\n')
 }
 
+/**
+ * 표 안의 표는 허용하지 않는다 (DEC-010). 안쪽 표는 칸의 글을 문단으로 풀어 놓는다.
+ * 화면에 붙지 않는 문서에서 처리하므로 스크립트·이미지가 실행·로딩되지 않는다.
+ */
+export function unnestTablesInHtml(html: string): string {
+  if (!/<table[\s>]/i.test(html)) return html
+  const doc = new DOMParser().parseFromString(html, 'text/html')
+  // 바깥 표 바로 안에 있는 표만 고른다 (그보다 더 안쪽 표의 글은 textContent에 함께 담긴다)
+  const nested = Array.from(doc.querySelectorAll('td table, th table')).filter(
+    (table) => !table.parentElement?.closest('td table, th table'),
+  )
+  for (const table of nested) {
+    const cells = Array.from(
+      table.querySelectorAll(':scope > tr > td, :scope > tr > th, :scope > * > tr > td, :scope > * > tr > th'),
+    )
+    const fragment = doc.createDocumentFragment()
+    for (const cell of cells) {
+      const text = cell.textContent?.trim()
+      if (!text) continue
+      const p = doc.createElement('p')
+      p.textContent = text
+      fragment.appendChild(p)
+    }
+    table.replaceWith(fragment)
+  }
+  return doc.body.innerHTML
+}
+
 function headingLevel(value: unknown): number {
   const level = typeof value === 'number' ? value : 2
   return level <= 2 ? 2 : 3
@@ -67,8 +96,9 @@ function headingLevel(value: unknown): number {
 
 const INLINE_TYPES = new Set(['text', 'hardBreak'])
 const LIST_TYPES = new Set(['bulletList', 'orderedList'])
+const CELL_TYPES = new Set(['tableCell', 'tableHeader'])
 /** 자식이 블록이어야 하는 노드 */
-const BLOCK_CONTAINERS = new Set(['doc', 'listItem', 'blockquote'])
+const BLOCK_CONTAINERS = new Set(['doc', 'listItem', 'blockquote', 'tableCell', 'tableHeader'])
 
 /** 블록 자리에 끼어든 글자(이미지 대체 글 등)는 문단으로 감싸고, 빈 문단은 뺀다 */
 function asBlocks(children: TiptapNode[]): TiptapNode[] {
@@ -100,15 +130,47 @@ function asListItems(children: TiptapNode[]): TiptapNode[] {
   })
 }
 
-/** 허용되지 않는 노드는 감싼 껍데기만 벗기고 안의 내용을 살린다. 이미지는 버린다 (DEC-002). */
-function sanitizeNode(node: TiptapNode): TiptapNode[] {
+/** 칸 합치기를 없애 짧아진 행은 끝에 빈 칸을 채워 열 수를 맞춘다 */
+function padRows(rows: TiptapNode[]): TiptapNode[] {
+  const width = Math.max(0, ...rows.map((r) => r.content?.length ?? 0))
+  return rows.map((r) => {
+    const cells = r.content ?? []
+    if (cells.length >= width) return r
+    const type = cells.at(-1)?.type ?? 'tableCell'
+    const filler = Array.from({ length: width - cells.length }, () => ({ type, content: [{ type: 'paragraph' }] }))
+    return { ...r, content: [...cells, ...filler] }
+  })
+}
+
+/** 표 행에는 칸만 둔다 (칸이 아닌 블록은 칸으로 감싼다) */
+function asCells(children: TiptapNode[]): TiptapNode[] {
+  return children.flatMap((child) => {
+    if (CELL_TYPES.has(child.type)) return [child]
+    const blocks = asBlocks([child])
+    return blocks.length > 0 ? [{ type: 'tableCell', content: blocks }] : []
+  })
+}
+
+/**
+ * 허용되지 않는 노드는 감싼 껍데기만 벗기고 안의 내용을 살린다. 이미지는 버린다 (DEC-002).
+ * 표 안의 표는 허용하지 않으므로(DEC-010) 안쪽 표는 껍데기를 벗긴다.
+ */
+function sanitizeNode(node: TiptapNode, inTable = false): TiptapNode[] {
   if (node.type === 'image') return []
   if (node.type === 'text') return node.text ? [node] : []
-  let children = (node.content ?? []).flatMap(sanitizeNode)
+  const isTable = node.type === 'table'
+  let children = (node.content ?? []).flatMap((child) => sanitizeNode(child, inTable || isTable))
   if (!NODE_ATTRS[node.type]) return children
+  if (isTable && inTable) return children.flatMap((rowNode) => (rowNode.content ?? []).flatMap((c) => c.content ?? []))
+  // 표 구조 밖에 떨어진 행·칸은 껍데기를 벗긴다
+  if ((node.type === 'tableRow' || CELL_TYPES.has(node.type)) && !inTable) return children
 
   if (BLOCK_CONTAINERS.has(node.type)) children = asBlocks(children)
   if (LIST_TYPES.has(node.type)) children = asListItems(children)
+  if (node.type === 'tableRow') children = asCells(children)
+  if (isTable) children = padRows(children.filter((child) => child.type === 'tableRow'))
+  if (CELL_TYPES.has(node.type) && children.length === 0) children = [{ type: 'paragraph' }] // 빈 칸도 칸으로 남긴다
+  if ((isTable || node.type === 'tableRow') && children.length === 0) return []
   if (node.type === 'listItem' && children[0] && children[0].type !== 'paragraph') {
     children = [{ type: 'paragraph' }, ...children] // 목록 항목은 문단으로 시작해야 한다
   }

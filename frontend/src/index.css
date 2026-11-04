@@ -50,4 +50,33 @@ body {
   .tiptap a {
     @apply text-blue-700 underline;
   }
+  /* DEC-010 표: 표 상자 안에서만 가로 스크롤 (페이지 가로 스크롤 금지, REQ-036) */
+  .post-content .table-scroll,
+  .tiptap .tableWrapper {
+    @apply max-w-full overflow-x-auto;
+  }
+  .post-content table,
+  .tiptap table {
+    @apply w-full border-collapse text-sm;
+  }
+  .post-content th,
+  .post-content td,
+  .tiptap th,
+  .tiptap td {
+    @apply min-w-24 border border-gray-300 px-3 py-2 align-top;
+    overflow-wrap: break-word; /* 칸 안 글자가 한 글자씩 끊기지 않게 (body는 anywhere) */
+  }
+  .post-content th,
+  .tiptap th {
+    @apply bg-gray-50 text-left font-semibold;
+  }
+  .post-content td > * + *,
+  .post-content th > * + *,
+  .tiptap td > * + *,
+  .tiptap th > * + * {
+    @apply mt-2;
+  }
+  .tiptap .selectedCell {
+    @apply bg-blue-50;
+  }
 }

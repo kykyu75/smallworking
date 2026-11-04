@@ -42,6 +42,7 @@ export default function EditorToolbar({ editor, extra }: { editor: Editor; extra
       blockquote: e.isActive('blockquote'),
       codeBlock: e.isActive('codeBlock'),
       link: e.isActive('link'),
+      table: e.isActive('table'),
     }),
   })
 
@@ -99,6 +100,33 @@ export default function EditorToolbar({ editor, extra }: { editor: Editor; extra
       <ToolButton label="링크" active={state.link} onClick={editLink}>
         🔗
       </ToolButton>
+      {/* DEC-010 표: 3×3(첫 행은 제목 칸)으로 넣고, 표 안에 커서가 있을 때만 행·열 버튼을 보여준다 */}
+      <ToolButton
+        label="표 넣기"
+        disabled={state.table}
+        onClick={() => chain().insertTable({ rows: 3, cols: 3, withHeaderRow: true }).run()}
+      >
+        ▦
+      </ToolButton>
+      {state.table && (
+        <span role="group" aria-label="표 편집" className="flex flex-wrap items-center gap-1 rounded bg-gray-50 px-1">
+          <ToolButton label="아래에 행 추가" onClick={() => chain().addRowAfter().run()}>
+            +행
+          </ToolButton>
+          <ToolButton label="오른쪽에 열 추가" onClick={() => chain().addColumnAfter().run()}>
+            +열
+          </ToolButton>
+          <ToolButton label="행 삭제" onClick={() => chain().deleteRow().run()}>
+            −행
+          </ToolButton>
+          <ToolButton label="열 삭제" onClick={() => chain().deleteColumn().run()}>
+            −열
+          </ToolButton>
+          <ToolButton label="표 삭제" onClick={() => chain().deleteTable().run()}>
+            표✕
+          </ToolButton>
+        </span>
+      )}
       {extra && <span className="ml-auto">{extra}</span>}
     </div>
   )

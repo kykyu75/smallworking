@@ -17,7 +17,14 @@ export const NODE_ATTRS: Record<string, readonly string[]> = {
   horizontalRule: [],
   hardBreak: [],
   image: ['imageId', 'alt'],
+  // DEC-010 표: 정렬만 저장 (칸 합치기 colspan/rowspan·너비 colwidth는 저장하지 않는다)
+  table: [],
+  tableRow: [],
+  tableHeader: ['align'],
+  tableCell: ['align'],
 }
+
+export const CELL_ALIGNS = ['left', 'center', 'right'] as const
 
 export const MARK_ATTRS: Record<string, readonly string[]> = {
   bold: [],
@@ -64,6 +71,10 @@ function normalizeNode(node: TiptapNode): TiptapNode | null {
     return out
   }
   if (node.type === 'image' && typeof attrs?.imageId !== 'number') return null
+  if (attrs && 'align' in attrs && !(CELL_ALIGNS as readonly unknown[]).includes(attrs.align)) {
+    delete attrs.align
+    if (Object.keys(attrs).length === 0) delete out.attrs
+  }
   if (node.content) {
     const children = node.content.map(normalizeNode).filter((n): n is TiptapNode => n !== null)
     if (children.length > 0) out.content = children

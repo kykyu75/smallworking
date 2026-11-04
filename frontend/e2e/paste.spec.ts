@@ -1,7 +1,7 @@
 // DEC-009 Markdown 원문·HTML 소스 붙여넣기 → 저장 → 공개 화면 (TC-POST-020, TC-POST-021)
 // 실제 클립보드에 글을 넣고 Ctrl+V로 붙여 넣는다.
 import { expect, test, type Page } from '@playwright/test'
-import { adminApi, loginInBrowser, unique } from './helpers'
+import { adminApi, expectNoHorizontalScroll, loginInBrowser, unique } from './helpers'
 
 test.use({ permissions: ['clipboard-read', 'clipboard-write'] })
 
@@ -83,6 +83,67 @@ test('HTML 소스를 붙여 넣으면 서식으로 저장되고 위험한 요소
   await expect(body).not.toContainText('<')
   expect(dialogs).toEqual([])
 
+  const api = await adminApi()
+  expect((await api.delete(`/api/posts/${postId}`)).status()).toBe(204)
+})
+
+test('Markdown 표를 붙여 넣으면 표로 저장되고, 휴대폰 폭에서는 표 안에서만 가로로 밀린다 (TC-POST-027, TC-POST-029, TC-RES-012)', async ({ page }) => {
+  await loginInBrowser(page)
+  const title = unique('표')
+  const markdown = [
+    '| 재료 | 규격 | 수량 | 구입처 | 비고 |',
+    '|---|---|---:|---|---|',
+    '| **원목** | 1800×300×18mm 집성목 | 2 | 동네목재상회 | 모서리 라운드 가공 요청 |',
+    '| 나사 | 4×35mm 피스 | 8 | 철물점 | 여유분 포함 |',
+  ].join('\n')
+  const postId = await writePost(page, title, markdown)
+
+  const body = page.locator('.post-content')
+  await expect(body.locator('th')).toHaveText(['재료', '규격', '수량', '구입처', '비고'])
+  await expect(body.locator('tr').nth(1).locator('td').first()).toHaveText('원목')
+  await expect(body.locator('tr').nth(1).locator('td strong')).toHaveText('원목')
+  await expect(body.locator('td').nth(2)).toHaveClass(/text-right/)
+
+  await page.setViewportSize({ width: 360, height: 800 })
+  await page.reload()
+  const scroller = page.getByRole('region', { name: '표' })
+  await expect(scroller).toBeVisible()
+  await expectNoHorizontalScroll(page)
+  const [scrollWidth, clientWidth] = await scroller.evaluate((el) => [el.scrollWidth, el.clientWidth])
+  expect(scrollWidth).toBeGreaterThan(clientWidth) // 표 상자 안에서만 가로 스크롤
+
+  const api = await adminApi()
+  expect((await api.delete(`/api/posts/${postId}`)).status()).toBe(204)
+})
+
+test('에디터 [표 넣기]로 표를 만들고 행을 추가해 저장한다 (TC-POST-028)', async ({ page }) => {
+  await loginInBrowser(page)
+  const title = unique('표버튼')
+  await page.goto('/admin/posts/new')
+  await page.getByLabel('카테고리').selectOption({ label: 'Blog' })
+  await page.getByLabel(/^제목 \(/).fill(title)
+  const editor = page.getByRole('textbox', { name: '본문' })
+  await editor.click()
+  await page.getByRole('button', { name: '표 넣기' }).click()
+  await expect(editor.locator('table tr')).toHaveCount(3)
+
+  await page.keyboard.type('항목') // 첫 칸(제목 칸)
+  await page.keyboard.press('Tab')
+  await page.keyboard.type('값')
+  await page.getByRole('group', { name: '표 편집' }).getByRole('button', { name: '아래에 행 추가' }).click()
+  await expect(editor.locator('table tr')).toHaveCount(4)
+
+  await page.getByRole('button', { name: '저장' }).click()
+  await expect(page.getByText(`'${title}' 글을 저장했습니다.`)).toBeVisible()
+
+  await page.goto('/')
+  await page.getByRole('region', { name: '🆕 최신 글' }).getByRole('link', { name: new RegExp(title) }).click()
+  const table = page.locator('.post-content table')
+  await expect(table.locator('tr')).toHaveCount(4)
+  await expect(table.locator('th').nth(0)).toHaveText('항목')
+  await expect(table.locator('th').nth(1)).toHaveText('값')
+
+  const postId = Number(new URL(page.url()).pathname.split('/').pop())
   const api = await adminApi()
   expect((await api.delete(`/api/posts/${postId}`)).status()).toBe(204)
 })

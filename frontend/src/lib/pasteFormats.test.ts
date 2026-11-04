@@ -1,6 +1,17 @@
 // DEC-009 붙여넣기 형식 판단·정리 (TC-POST-020~023)
 import { describe, expect, it } from 'vitest'
-import { choosePasteFormat, remapHeadingsInHtml, remapHeadingsInMarkdown, sanitizePastedDoc } from './pasteFormats'
+import {
+  choosePasteFormat,
+  remapHeadingsInHtml,
+  remapHeadingsInMarkdown,
+  sanitizePastedDoc,
+  unnestTablesInHtml,
+} from './pasteFormats'
+import type { TiptapNode } from '../types/post'
+
+const p = (text: string): TiptapNode => ({ type: 'paragraph', content: [{ type: 'text', text }] })
+const td = (text: string, attrs?: Record<string, unknown>): TiptapNode => ({ type: 'tableCell', attrs, content: [p(text)] })
+const tr = (...cells: TiptapNode[]): TiptapNode => ({ type: 'tableRow', content: cells })
 
 describe('choosePasteFormat (TC-POST-020)', () => {
   it('Markdown 원문은 markdown', () => {
@@ -70,19 +81,12 @@ describe('sanitizePastedDoc (TC-POST-022, TC-SEC-014)', () => {
     })
   })
 
-  it('모르는 블록(표)은 껍데기만 벗기고 글자를 살린다', () => {
+  it('모르는 블록은 껍데기만 벗기고 글자를 살린다', () => {
     const doc = sanitizePastedDoc({
       type: 'doc',
-      content: [
-        {
-          type: 'table',
-          content: [
-            { type: 'tableRow', content: [{ type: 'tableCell', content: [{ type: 'paragraph', content: [{ type: 'text', text: '셀' }] }] }] },
-          ],
-        },
-      ],
+      content: [{ type: 'details', content: [{ type: 'paragraph', content: [{ type: 'text', text: '접힌 글' }] }] }],
     })
-    expect(doc.content).toEqual([{ type: 'paragraph', content: [{ type: 'text', text: '셀' }] }])
+    expect(doc.content).toEqual([{ type: 'paragraph', content: [{ type: 'text', text: '접힌 글' }] }])
   })
 
   it('블록 자리의 글자는 문단으로 감싸고 빈 문단·빈 목록은 뺀다', () => {
@@ -115,3 +119,75 @@ describe('sanitizePastedDoc (TC-POST-022, TC-SEC-014)', () => {
     expect(doc.content?.map((n) => n.attrs?.level)).toEqual([2, 3])
   })
 })
+
+describe('표 붙여넣기 정리 (DEC-010, TC-POST-027)', () => {
+  it('Markdown 표 구분 줄이 있으면 markdown으로 본다', () => {
+    expect(choosePasteFormat('| a | b |\n|---|:---:|\n| 1 | 2 |', '')).toBe('markdown')
+    expect(choosePasteFormat('a | b\n--- | ---\n1 | 2', '')).toBe('markdown')
+  })
+
+  it('표는 그대로 두고 칸 합치기·너비·잘못된 정렬은 뺀다', () => {
+    const doc = sanitizePastedDoc({
+      type: 'doc',
+      content: [
+        {
+          type: 'table',
+          content: [
+            tr(td('a', { align: 'center', colspan: 2, rowspan: 1, colwidth: [100] }), td('b', { align: 'justify' })),
+          ],
+        },
+      ],
+    })
+    expect(doc.content).toEqual([{ type: 'table', content: [tr(td('a', { align: 'center' }), td('b'))].map(stripUndefined) }])
+  })
+
+  it('짧은 행은 끝에 빈 칸을 채운다', () => {
+    const doc = sanitizePastedDoc({
+      type: 'doc',
+      content: [{ type: 'table', content: [tr(td('a'), td('b'), td('c')), tr(td('d'))] }],
+    })
+    const rows = doc.content![0].content!
+    expect(rows.map((r) => r.content!.length)).toEqual([3, 3])
+    expect(rows[1].content![2]).toEqual({ type: 'tableCell', content: [{ type: 'paragraph' }] })
+  })
+
+  it('표 안의 표는 풀어서 글자만 칸에 남긴다', () => {
+    const inner: TiptapNode = { type: 'table', content: [tr(td('안1'), td('안2'))] }
+    const doc = sanitizePastedDoc({
+      type: 'doc',
+      content: [{ type: 'table', content: [tr({ type: 'tableCell', content: [inner] })] }],
+    })
+    expect(doc.content).toEqual([{ type: 'table', content: [tr({ type: 'tableCell', content: [p('안1'), p('안2')] })].map(stripUndefined) }])
+  })
+
+  it('빈 칸은 빈 문단으로 남기고, 칸 아닌 것은 칸으로 감싸며, 표 밖의 행·칸은 껍데기를 벗긴다', () => {
+    const doc = sanitizePastedDoc({
+      type: 'doc',
+      content: [
+        { type: 'table', content: [tr({ type: 'tableCell', content: [{ type: 'image', attrs: { imageId: 1 } }] }, p('행에 바로 온 문단'))] },
+        tr(td('떨어진 칸')),
+        { type: 'table', content: [] },
+      ],
+    })
+    expect(doc.content).toEqual([
+      {
+        type: 'table',
+        content: [tr({ type: 'tableCell', content: [{ type: 'paragraph' }] }, { type: 'tableCell', content: [p('행에 바로 온 문단')] })],
+      },
+      p('떨어진 칸'),
+    ])
+  })
+
+  it('HTML 소스의 표 안 표는 문단으로 푼다', () => {
+    const html = '<table><tr><td>a</td><td><table><tbody><tr><td>안1</td><td> </td><td>안2</td></tr></tbody></table></td></tr></table>'
+    const out = unnestTablesInHtml(html)
+    expect(out.match(/<table/g)).toHaveLength(1)
+    expect(out).toContain('<p>안1</p><p>안2</p>')
+    expect(unnestTablesInHtml('<p>표 없음</p>')).toBe('<p>표 없음</p>')
+  })
+})
+
+/** attrs: undefined 같은 빈 항목을 없앤다 (normalizeDoc 결과와 비교하기 위해) */
+function stripUndefined<T>(value: T): T {
+  return JSON.parse(JSON.stringify(value)) as T
+}
