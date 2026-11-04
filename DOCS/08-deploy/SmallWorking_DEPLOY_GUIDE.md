@@ -33,11 +33,13 @@
 
 1. 프로젝트 **Storage** 탭 → **Create Storage → Blob**.
 2. 접근: **Public** (반드시 Public — 이미지 주소를 바로 보여주는 구조), 이름: `smallworking-images`.
-3. 환경: **Production**, **Preview**. → `BLOB_READ_WRITE_TOKEN` 등이 자동으로 생긴다.
-4. **공개 주소 확인**: 만든 저장소 화면의 **Browser**에서 아무 작은 파일(예: 메모장으로 만든 `hello.txt`)을 올리고 나온 주소를 복사한다.
+3. 지역: **Singapore (sin1)**, 환경: **Production**, **Preview**.
+   → `BLOB_STORE_ID`, `BLOB_WEBHOOK_PUBLIC_KEY`가 자동으로 생긴다. **`BLOB_READ_WRITE_TOKEN`은 생기지 않는 것이 정상**이다 (Vercel이 실행 중에 짧은 토큰을 자동 발급, DEC-012).
+4. **공개 주소 확인 (권장)**: 만든 저장소 화면의 **Browser**에서 아무 작은 파일(예: 메모장으로 만든 `hello.txt`)을 올리고 나온 주소를 복사한다.
    - 예: `https://abcd1234efgh.public.blob.vercel-storage.com/hello.txt`
    - 파일 이름을 뺀 앞부분 `https://abcd1234efgh.public.blob.vercel-storage.com` 이 **BLOB_PUBLIC_BASE_URL**이다.
    - 올린 테스트 파일은 지워도 된다.
+   - 넣지 않으면 앱이 `BLOB_STORE_ID`로 같은 형식의 주소를 만든다. 직접 확인한 주소를 넣는 편이 확실하다.
 
 ## 4단계 — 환경변수 넣기 👤
 
@@ -57,7 +59,7 @@
 C:\SmallWorking\backend\.venv\Scripts\python -c "import secrets; print(secrets.token_urlsafe(32))"
 ```
 
-> `DATABASE_URL`, `BLOB_READ_WRITE_TOKEN`은 2·3단계에서 자동으로 들어가므로 직접 넣지 않는다.
+> `DATABASE_URL`, `BLOB_STORE_ID`는 2·3단계에서 자동으로 들어가므로 직접 넣지 않는다.
 > `ADMIN_USERNAME`, `ADMIN_PASSWORD`는 Vercel에 넣지 않는다 (5단계 관리자 생성에서만 사용).
 
 ## 5단계 — 운영 DB 준비 (마이그레이션 + 관리자) 👤 → 🤖

@@ -23,7 +23,11 @@ def _build_storage() -> StorageBackend:
     if settings.storage_backend == "local":
         return LocalStorage(settings.upload_root)
     if settings.storage_backend == "blob":
-        return BlobStorage(token=settings.blob_read_write_token, public_base_url=settings.blob_public_base_url)
+        return BlobStorage(
+            token=settings.blob_read_write_token,
+            public_base_url=settings.blob_public_base_url,
+            store_id=settings.blob_store_id,
+        )
     raise RuntimeError(f"알 수 없는 STORAGE_BACKEND 값입니다: {settings.storage_backend!r} (local 또는 blob)")
 
 

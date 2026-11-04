@@ -200,7 +200,8 @@ SmallWorking/
 | `SW_ENV_FILE` | 지정하면 그 파일**만** 읽는다 (예: `.env.neon`로 운영 DB 작업, 개발 `.env`와 섞이지 않게) |
 | `STORAGE_BACKEND` | `local` / `blob` |
 | `UPLOAD_ROOT` | 로컬 저장 폴더 (개발) |
-| `BLOB_READ_WRITE_TOKEN` | Vercel Blob (운영) |
+| `BLOB_READ_WRITE_TOKEN` | Vercel Blob 고정 토큰 (Vercel 밖에서 쓸 때만. 운영은 아래 `BLOB_STORE_ID` + 자동 OIDC) |
+| `BLOB_STORE_ID` | Vercel이 Blob store 연결 시 자동 추가 — 운영 Blob 인증·공개 주소 생성 (DEC-012) |
 | `BLOB_PUBLIC_BASE_URL` | Vercel Blob store 공개 주소 — 저장 키로 이미지 주소를 만든다 (운영, M4 추가) |
 | `ADMIN_USERNAME`, `ADMIN_PASSWORD` | `create-admin` 명령에서만 사용 |
 | `ALLOWED_ORIGINS` | Origin 검사 허용 주소 |

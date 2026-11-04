@@ -74,6 +74,7 @@ class Settings:
     storage_backend: str
     upload_root: Path
     blob_read_write_token: str
+    blob_store_id: str
     blob_public_base_url: str
     allowed_origins: tuple[str, ...]
     cron_secret: str
@@ -95,6 +96,7 @@ class Settings:
             storage_backend=os.environ.get("STORAGE_BACKEND", "local"),
             upload_root=upload_root,
             blob_read_write_token=os.environ.get("BLOB_READ_WRITE_TOKEN", ""),
+            blob_store_id=os.environ.get("BLOB_STORE_ID", "").strip(),  # Vercel이 store 연결 시 자동 추가 (DEC-012)
             blob_public_base_url=os.environ.get("BLOB_PUBLIC_BASE_URL", "").rstrip("/"),
             allowed_origins=_list(os.environ.get("ALLOWED_ORIGINS")),
             cron_secret=os.environ.get("CRON_SECRET", ""),

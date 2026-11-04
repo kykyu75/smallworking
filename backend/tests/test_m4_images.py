@@ -275,6 +275,37 @@ def test_blob_storage_calls_sdk(monkeypatch):
 
 def test_blob_storage_requires_settings():
     with pytest.raises(RuntimeError):
-        BlobStorage(token="", public_base_url="https://x")
+        BlobStorage(token="", public_base_url="https://x")  # 토큰도 store ID도 없음
     with pytest.raises(RuntimeError):
-        BlobStorage(token="t", public_base_url="")
+        BlobStorage(token="t", public_base_url="")  # 주소를 만들 store ID도 없음
+
+
+def test_blob_storage_with_store_id_only(monkeypatch):
+    # Vercel에 연결된 store: BLOB_READ_WRITE_TOKEN 없이 BLOB_STORE_ID + OIDC (DEC-012)
+    monkeypatch.delenv("BLOB_STORE_ID", raising=False)
+    blob = BlobStorage(store_id="store_AbC123xyz")
+    assert blob.public_base_url == "https://abc123xyz.public.blob.vercel-storage.com"
+    import os
+
+    assert os.environ["BLOB_STORE_ID"] == "store_AbC123xyz"
+    explicit = BlobStorage(store_id="store_AbC123xyz", public_base_url="https://custom.example/")
+    assert explicit.public_url("images/a.jpg") == "https://custom.example/images/a.jpg"
+
+
+def test_vercel_headers_reach_sdk(app, client):
+    # 요청 헤더(OIDC 토큰)가 SDK가 읽는 자리에 들어가고, 요청이 끝나면 지워진다
+    from fastapi import APIRouter
+    from vercel.headers import get_headers
+
+    seen = {}
+    router = APIRouter()
+
+    @router.get("/api/_probe_headers")
+    def probe():
+        seen.update(get_headers() or {})
+        return {}
+
+    app.include_router(router)
+    client.get("/api/_probe_headers", headers={"x-vercel-oidc-token": "oidc-abc"})
+    assert seen.get("x-vercel-oidc-token") == "oidc-abc"
+    assert get_headers() is None
