@@ -566,6 +566,7 @@ Vercel (하나의 프로젝트, 하나의 도메인)
 | DB 연결 | 앱은 Neon **풀러 주소**(`DATABASE_URL`)를 쓴다. 풀러는 세션 설정을 지원하지 않으므로 `-c timezone=UTC`를 보내지 않고, 대신 **DB 기본 시간대를 UTC로** 설정한다 (마이그레이션 `8c1f2d3e4a5b`). 직접 연결(로컬 등)에는 지금처럼 시작 옵션을 보낸다 |
 | 주소 형식 | Neon이 주는 `postgres://`·`postgresql://` 주소를 앱이 psycopg 형식으로 바꿔 쓴다 |
 | 마이그레이션·관리자 생성 | Neon **직접 연결 주소**(`DATABASE_URL_UNPOOLED`)로 로컬에서 `alembic upgrade head`, `create-admin` 실행 (배포 가이드 절차) |
+| Blob 인증 | Vercel이 store 연결 시 **`BLOB_STORE_ID`만 넣고 `BLOB_READ_WRITE_TOKEN`은 넣지 않는다**(2026 방식: 요청마다 오는 OIDC 토큰). 앱은 둘 중 하나만 있으면 동작하고, 요청 헤더를 SDK에 전달한다(`VercelHeadersMiddleware`). `BLOB_PUBLIC_BASE_URL`이 비어 있으면 `https://<store ID 소문자>.public.blob.vercel-storage.com`으로 만든다 |
 | Origin 검사 | Vercel이 공개 주소를 `x-forwarded-host`로 전달하므로 `Host`와 함께 같은 사이트로 인정한다 (브라우저 Origin은 페이지가 바꿀 수 없어 안전) |
 | 미리보기 DB | Neon 연동의 **미리보기 브랜치**(배포마다 운영 DB 복사본) 사용 — 미리보기 확인이 운영 데이터를 바꾸지 않게 |
 | 지역 | 함수와 DB를 같은 지역에 둔다: Neon Singapore `aws-ap-southeast-1` + Vercel 함수 `sin1` (`vercel.json`의 `regions`, Hobby는 1개 지역) |

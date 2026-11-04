@@ -12,6 +12,7 @@ from app.core.config import get_settings
 from app.core.errors import register_error_handlers
 from app.core.headers import SecurityHeadersMiddleware
 from app.core.origin import OriginCheckMiddleware
+from app.core.vercel_headers import VercelHeadersMiddleware
 from app.storage.local import PUBLIC_PREFIX
 
 
@@ -27,6 +28,7 @@ def create_app() -> FastAPI:
     register_error_handlers(app)
     app.add_middleware(OriginCheckMiddleware, allowed_origins=settings.allowed_origins)
     app.add_middleware(SecurityHeadersMiddleware)
+    app.add_middleware(VercelHeadersMiddleware)  # Blob OIDC 인증용 (DEC-012)
 
     app.include_router(health.router)
     app.include_router(admin_auth.router)
