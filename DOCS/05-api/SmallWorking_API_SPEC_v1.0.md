@@ -117,6 +117,7 @@ GET  /api/posts/{post_id}
 | API-026 | GET | `/api/admin/comments` | 관리자 댓글 목록 | 관리자 | **신규** (REQ-035) |
 | API-027 | DELETE | `/api/admin/comments/{comment_id}` | 관리자 댓글 삭제 | 관리자 | **신규** (REQ-035) |
 | API-028 | GET | `/api/cron/cleanup` | 정리 작업 실행 | Cron 전용 (`CRON_SECRET`) | **신규** (DEC-007) |
+| API-029~038 | — | `/api/requests…`, `/api/admin/requests…` | 요청 게시판 (§11-1) | 공개 / 비밀번호 / 관리자 | **신규** (DEC-011) |
 
 > **API-017 경로 변경 이유:** `DELETE` 요청의 본문(body)은 일부 프록시와 클라이언트에서 버려질 수 있다. 비밀번호를 본문으로 안전하게 보내기 위해 `POST .../delete`로 바꾼다.
 
@@ -824,6 +825,93 @@ Response `200`:
 
 ---
 
+## 11-1. Request API — 요청 게시판 (DEC-011, REQ-045~049)
+
+### 공통 구조
+
+**RequestSummary** (목록, API-029)
+
+```json
+{
+  "id": 7, "kind": "diy", "title": "선반 도면 공유 부탁드려요",
+  "nickname": "목수지망생", "is_secret": false, "answered": true,
+  "created_at": "2026-11-04T01:00:00Z"
+}
+```
+
+- 비밀글이면 `title`은 `null` (화면은 "비밀글입니다"로 표시).
+- `kind`: `material`(자료 요청) / `diy`(DIY 요청) / `etc`(기타)
+
+**RequestDetail** (상세·작성·수정·열람)
+
+```json
+{
+  "id": 7, "kind": "diy", "title": "…", "content": "…", "nickname": "목수지망생",
+  "is_secret": true, "locked": false,
+  "answer": "다음 주에 올려 드릴게요.", "answered_at": "…",
+  "created_at": "…", "updated_at": "…"
+}
+```
+
+- `locked = true`: 비밀글인데 아직 비밀번호를 확인하지 않은 상태. `title`, `content`, `answer`, `answered_at`은 `null`.
+- `answered`(목록)·`answer`가 있으면 "답변 완료", 없으면 "접수".
+
+| ID | Method | Endpoint | 설명 | 권한 |
+|---|---|---|---|---|
+| API-029 | GET | `/api/requests?page=1&size=12` | 요청 목록 (최신순) | 공개 |
+| API-030 | POST | `/api/requests` | 요청 작성 → `201 RequestDetail` (작성자에게는 비밀글도 내용 포함) | 공개 |
+| API-031 | GET | `/api/requests/{id}` | 요청 상세. 비밀글은 `locked: true` (운영자 로그인 상태면 전체) | 공개 |
+| API-032 | POST | `/api/requests/{id}/open` | 비밀번호로 비밀글 열람 `{ "password" }` → `RequestDetail` | 비밀번호 |
+| API-033 | PUT | `/api/requests/{id}` | 수정 `{ password, kind, title, content, is_secret }` | 비밀번호 |
+| API-034 | POST | `/api/requests/{id}/delete` | 삭제 `{ "password" }` → `204` (API-017과 같은 이유로 POST) | 비밀번호 |
+| API-035 | GET | `/api/admin/requests?status=open\|answered&page=1&size=20` | 관리자 목록 (비밀글 포함 전체 내용) + `open_count` | 관리자 |
+| API-036 | PUT | `/api/admin/requests/{id}/answer` | 답변 작성·수정 `{ "answer" }` → `RequestDetail` | 관리자 |
+| API-037 | DELETE | `/api/admin/requests/{id}/answer` | 답변 삭제 (다시 "접수") → `RequestDetail` | 관리자 |
+| API-038 | DELETE | `/api/admin/requests/{id}` | 요청 삭제 → `204` | 관리자 |
+
+### 입력 (API-030, API-033)
+
+| 필드 | 규칙 |
+|---|---|
+| `kind` | `material` / `diy` / `etc` |
+| `title` | 1~100자 |
+| `content` | 1~2,000자 (일반 텍스트) |
+| `nickname` | 2~20자 (API-030만, 수정 불가) |
+| `password` | 4~64자 |
+| `is_secret` | true / false (기본 false) |
+| `answer` (API-036) | 1~2,000자 |
+
+### 비밀번호 확인 규칙 (API-032~034)
+
+- 틀리면 `403 INVALID_PASSWORD`, 횟수 +1. **5회 연속 실패 → 10분 잠금**: `423 REQUEST_LOCKED` (`details.locked_until`). 잠긴 동안은 맞는 비밀번호도 거부.
+- 성공하면 실패 횟수 초기화.
+- API-032는 비밀글이 아니어도 동작한다 (비밀번호 확인 용도).
+
+### 관리자 목록 (API-035)
+
+```json
+{
+  "items": [ { "id": 7, "kind": "diy", "title": "…", "content": "…", "nickname": "…", "is_secret": true,
+               "answer": null, "answered_at": null, "created_at": "…", "updated_at": "…" } ],
+  "page": 1, "size": 20, "total": 3, "open_count": 2
+}
+```
+
+- `status`: 생략하면 전체, `open`이면 답변 없는 요청만, `answered`이면 답변 있는 요청만. 정렬은 최신순.
+- `open_count`: 필터와 관계없이 답변하지 않은 요청 수 (대시보드 "새 요청 N건").
+
+### 오류
+
+| 코드 | Status | 경우 |
+|---|---:|---|
+| `REQUEST_NOT_FOUND` | 404 | 없는 요청 |
+| `INVALID_PASSWORD` | 403 | 비밀번호 불일치 |
+| `REQUEST_LOCKED` | 423 | 비밀번호 5회 실패로 잠김 |
+| `REQUEST_ANSWERED` | 409 | 답변이 달린 요청 수정 시도 |
+| `VALIDATION_ERROR` | 422 | 입력값 오류, 잘못된 `status` |
+
+---
+
 ## 12. 공통 오류 응답
 
 모든 오류는 같은 형식을 사용한다.
@@ -886,6 +974,9 @@ Response `200`:
 | `REPLY_DEPTH_EXCEEDED` | 422 | 답글에는 답글을 달 수 없습니다. |
 | `INVALID_PARENT_COMMENT` | 422 | 답글을 달 댓글이 올바르지 않습니다. |
 | `COMMENT_ALREADY_DELETED` | 422 | 삭제된 댓글입니다. |
+| `REQUEST_NOT_FOUND` | 404 | 요청 글을 찾을 수 없습니다. (DEC-011) |
+| `REQUEST_LOCKED` | 423 | 비밀번호를 여러 번 틀렸습니다. 잠시 후 다시 시도해 주세요. (DEC-011) |
+| `REQUEST_ANSWERED` | 409 | 답변이 달린 요청은 수정할 수 없습니다. (DEC-011) |
 | `INTERNAL_ERROR` | 500 | 잠시 후 다시 시도해 주세요. |
 
 ---
@@ -995,4 +1086,5 @@ Claude.md
 |---|---|---|
 | 0.1 | 2026-09-15 | 초기 REST API 설계 초안 |
 | 1.0 | 2026-11-03 | DEC-001~006 반영: 인증 API(023~025), 좋아요 취소(022), 관리자 댓글 API(026, 027) 신규, API-017 경로 변경, API-005 요청 형식 단순화, API-020 임시 이미지 전용, 공통 구조·페이징·쿠키·CSRF·라우트 순서 규칙, 오류 코드 목록 확정 |
+| 1.0 (개정) | 2026-11-04 | DEC-011 반영: §11-1 요청 게시판 API-029~038, 오류 코드 `REQUEST_NOT_FOUND`·`REQUEST_LOCKED`·`REQUEST_ANSWERED` 추가 |
 | 1.0 (개정) | 2026-11-03 | DEC-007 반영: Vercel Functions 실행 환경, 업로드 크기 4MB + 브라우저 사전 축소, 이미지 주소는 StorageBackend가 생성(운영: Vercel Blob), 정리 작업 API-028 신규 |

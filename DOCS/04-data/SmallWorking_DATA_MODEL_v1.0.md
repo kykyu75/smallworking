@@ -430,6 +430,49 @@ now() < last_active_at + 2시간              (2시간 비활동 시 만료)
 
 ---
 
+# 10-1. visitor_request (신규, DEC-011)
+
+## 10-1.1 목적
+
+방문자가 운영자에게 남기는 요청 글(요청 게시판)과 운영자 답변을 저장한다. 다른 테이블과 관계가 없다.
+
+## 10-1.2 컬럼
+
+| 컬럼 | 타입 | NULL | 기본값 | 설명 |
+|---|---|:-:|---|---|
+| id | BIGINT IDENTITY | NO | 자동 | PK |
+| kind | VARCHAR(20) | NO | — | `material`(자료 요청) / `diy`(DIY 요청) / `etc`(기타) |
+| title | VARCHAR(100) | NO | — | 제목 (1~100자) |
+| content | VARCHAR(2000) | NO | — | 내용, 일반 텍스트 (1~2,000자) |
+| nickname | VARCHAR(20) | NO | — | 2~20자 |
+| password_hash | VARCHAR(255) | NO | — | Argon2 해시 (원문 저장 안 함) |
+| is_secret | BOOLEAN | NO | `false` | 비밀글 |
+| answer | VARCHAR(2000) | YES | NULL | 운영자 답변 (1~2,000자). 있으면 "답변 완료" |
+| answered_at | TIMESTAMPTZ | YES | NULL | 답변을 마지막으로 저장한 시각 |
+| failed_password_count | INTEGER | NO | `0` | 비밀번호 연속 실패 횟수 |
+| locked_until | TIMESTAMPTZ | YES | NULL | 비밀번호 확인 잠금 해제 시각 |
+| created_at | TIMESTAMPTZ | NO | `now()` | 작성일 |
+| updated_at | TIMESTAMPTZ | NO | `now()` | 작성자가 수정한 시각 (답변 저장은 바꾸지 않음) |
+
+## 10-1.3 제약조건·인덱스
+
+| 이름 | 내용 |
+|---|---|
+| `pk_visitor_request` | `id` |
+| `ck_visitor_request_kind` | `kind IN ('material', 'diy', 'etc')` |
+| `ck_visitor_request_answer` | `(answer IS NULL) = (answered_at IS NULL)` |
+| `ck_visitor_request_failed_count` | `failed_password_count >= 0` |
+| `ix_visitor_request_created` | `created_at DESC` (목록 최신순) |
+
+## 10-1.4 규칙
+
+- 상태는 저장하지 않는다: `answer`가 있으면 "답변 완료", 없으면 "접수".
+- 비밀번호 확인(열람·수정·삭제)이 5회 연속 실패하면 `locked_until = now + 10분`. 잠긴 동안은 맞는 비밀번호도 거부한다. 성공하면 횟수를 0으로 되돌린다. 잠금 시간이 지나면 횟수를 0으로 되돌린다.
+- 답변이 있으면 작성자가 수정할 수 없다 (삭제는 가능).
+- 삭제는 완전 삭제 (답변 포함).
+
+---
+
 # 11. 테이블 관계 (ERD)
 
 ```text
@@ -632,5 +675,6 @@ Claude.md
 |---|---|---|
 | 0.1 | 2026-09-15 | 초기 DB 모델 초안 작성 |
 | 1.0 | 2026-11-03 | DEC-001~006 반영: `content` JSONB 확정, `post_image` 임시 이미지·썸네일, `comment` soft delete, `post_like` UNIQUE, `admin_user`·`admin_session` 신규, FK 삭제 정책, 컬럼 길이, 인덱스, Seed, 정리 작업 |
+| 1.0 (개정) | 2026-11-04 | DEC-011 반영: §10-1 `visitor_request` 테이블 신규 (마이그레이션 추가) |
 | 1.0 (개정) | 2026-11-04 | DEC-010 반영: §5.4 허용 노드에 표(`table`, `tableRow`, `tableHeader`, `tableCell`)와 구조 규칙 추가 (스키마·마이그레이션 변경 없음) |
 | 1.0 (개정) | 2026-11-03 | DEC-007 반영: 이미지 경로를 저장소 키로 변경(로컬/Vercel Blob 공통), 운영 DB Neon, 초기 관리자는 관리 명령으로 생성, 정리 작업을 Vercel Cron 하루 1회로 변경 |
