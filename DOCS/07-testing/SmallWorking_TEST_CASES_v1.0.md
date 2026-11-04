@@ -131,6 +131,10 @@ TC-xxx  (제대로 만들어졌는가)   ← 현재 문서
 | TC-POST-017 | 허용되지 않은 노드 | 관리자 | 본문에 `{ "type": "iframe" }` 노드 | 422 `INVALID_CONTENT` (DEC-001) | P1 | A | REQ-044 | API-008 |
 | TC-POST-018 | 허용되지 않은 속성 | 관리자 | `image` 노드에 `src`, `onerror` 속성 | 422 `INVALID_CONTENT` | P1 | A | REQ-044 | API-008 |
 | TC-POST-019 | 제목 길이 | 관리자 | 200자 / 201자 제목 | 200자 201, 201자 422 (DEC-006) | P2 | A | REQ-039 | API-008 |
+| TC-POST-020 | Markdown 원문 붙여넣기 | 관리자, 에디터 | `# 제목`, `**굵게**`, `[링크](https://…)`, `- 목록`, `1. 목록`, `> 인용`, ```` ``` ```` 코드블록을 붙여 넣고 저장 | 에디터·상세 화면에 h2, 굵게, 링크, 목록, 인용, 코드블록으로 표시. `**` 같은 기호가 남지 않음 (DEC-009) | P2 | A | REQ-018 | COMP-132 |
+| TC-POST-021 | HTML 소스 붙여넣기 | 관리자, 에디터 | `<h1>`, `<strong>`, `<ul>`이 있는 HTML 소스를 붙여 넣고 저장 | h1은 h2로, 굵게·목록 표시. 태그 글자가 남지 않음 (DEC-009) | P2 | A | REQ-018 | COMP-132 |
+| TC-POST-022 | 일반 글 붙여넣기 | 관리자, 에디터 | Markdown·HTML 표시가 없는 글 | 글자 그대로 들어감 (변환 없음) | P3 | A | REQ-018 | COMP-132 |
+| TC-POST-023 | 서식 있는 복사 붙여넣기 | 관리자, 에디터 | 웹페이지에서 복사(클립보드에 서식 HTML 포함) | 기존 방식대로 허용 서식만 남음. Markdown 변환을 하지 않음 | P3 | A | REQ-018 | COMP-132 |
 
 ---
 
@@ -296,6 +300,7 @@ TC-xxx  (제대로 만들어졌는가)   ← 현재 문서
 | TC-SEC-011 | 민감 정보 미노출 | 모든 API 응답 확인 | `password`, `password_hash`, `token_hash`, `visitor_key` 없음 | P1 | A | REQ-043 |
 | TC-SEC-012 | 링크 안전 속성 | 본문 링크 렌더링 확인 | `target="_blank"`에 `rel="noopener noreferrer"` | P2 | A | REQ-044 |
 | TC-SEC-013 | 쿠키 스크립트 접근 | 브라우저 콘솔에서 `document.cookie` 확인 | `sw_session`, `sw_visitor`가 보이지 않음 (HttpOnly) | P2 | M | REQ-042 |
+| TC-SEC-014 | 붙여넣기 정리 | Markdown·HTML 소스에 `javascript:` 링크, `onclick`·`onerror`, `<script>`, 외부 `<img>`를 넣어 붙여넣기 | 위험한 링크·속성·스크립트·이미지가 문서에 남지 않음, 경고창이 뜨지 않음 (DEC-009) | P1 | A | REQ-044 |
 
 ---
 
@@ -451,7 +456,7 @@ TC-INT-001을 360px 모바일 환경에서 동일하게 수행 → PRD §17 성�
 | REQ-041 | 작업 실패 처리 | TC-COM-011, TC-VAL-007, 009, TC-ADM-008, 018 |
 | REQ-042 | 관리자 보호 | TC-ADM-001~005, 012~021, TC-IMG-012, TC-SEC-010, 013 |
 | REQ-043 | 비밀번호 보호 | TC-COM-003, 004, TC-SEC-006, 011 |
-| REQ-044 | XSS 방지 | TC-POST-017, 018, TC-SEC-001~005, 007, 012, TC-COM-021 |
+| REQ-044 | XSS 방지 | TC-POST-017, 018, TC-SEC-001~005, 007, 012, 014, TC-COM-021 |
 
 > **모든 REQ(001~044)에 최소 1개 이상의 TC가 연결되어 있다.**
 
@@ -465,6 +470,7 @@ TC-INT-001을 360px 모바일 환경에서 동일하게 수행 → PRD §17 성�
 | DEC-004 좋아요 | TC-LIKE-001~013 |
 | DEC-005 삭제 정책 | TC-CAT-008, 014, TC-POST-008, TC-COM-014, 016~019, TC-ADM-011 |
 | DEC-006 표시 규칙 | TC-HOME-002~004, 009, TC-POST-013, TC-COM-005, 020, TC-CAT-012, TC-POST-019, TC-RES-001~005 |
+| DEC-009 붙여넣기 변환 | TC-POST-020~023, TC-SEC-014 |
 
 ---
 
@@ -562,6 +568,7 @@ Claude.md
 
 | 버전 | 날짜 | 내용 |
 |---|---|---|
+| 1.0 (개정) | 2026-11-04 | DEC-009 반영: 붙여넣기 변환 TC-POST-020~023, TC-SEC-014 추가 (Vitest `pasteFormats.test.ts`·`RichTextEditor.test.tsx`, E2E `paste.spec.ts`) |
 | 0.1 | 2026-11-03 | 초기 테스트 케이스 작성 (REQ-001~044 전체 추적) |
 | 1.0 (개정) | 2026-11-03 | DEC-007, 008 반영: 업로드 크기(원본 10MB / 서버 4MB)·브라우저 축소 테스트, 정리 작업 API-028 인증·멱등성 테스트, 초기 관리자 관리 명령, Vercel 미리보기 배포 확인 테스트(TC-DEP-001~007) 신규, 테스트 도구 확정 |
 | 1.0 | 2026-11-03 | DEC-001~006, API_SPEC v1.0, COMPONENT_SPEC v1.0 반영: Pending Policy 14건 해소, 자동/수동 구분 추가, 테스트 추가(이미지 연결·리사이징·정리, soft delete, 좋아요 취소·멱등·동시성, 로그인 잠금·세션 만료, Origin 검사, 민감 정보 미노출), 통합 시나리오 보강(TC-INT-004 신규), DEC → TC 매핑 추가 |
