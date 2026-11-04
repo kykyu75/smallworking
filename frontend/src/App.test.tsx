@@ -42,8 +42,10 @@ describe('카테고리 메뉴 (COMP-002~004)', () => {
     renderAt('/')
     const desktopMenu = await screen.findByRole('navigation', { name: '카테고리' })
     const links = within(desktopMenu).getAllByRole('link')
-    expect(links.map((a) => a.textContent)).toEqual(['DIY', 'Portfolio', 'Blog', 'Board', '여행'])
+    // 카테고리 뒤에 고정 메뉴 "요청하기" (COMP-006, DEC-011)
+    expect(links.map((a) => a.textContent)).toEqual(['DIY', 'Portfolio', 'Blog', 'Board', '여행', '요청하기'])
     expect(links[4]).toHaveAttribute('href', '/category/9')
+    expect(links[5]).toHaveAttribute('href', '/requests')
   })
 
   // TC-RES-002: 모바일 메뉴 열기/닫기, 이동하면 닫힘

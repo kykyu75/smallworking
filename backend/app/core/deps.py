@@ -26,3 +26,12 @@ def require_admin(
     if admin is None:
         raise AppError(401, "UNAUTHORIZED", "로그인이 필요합니다.")
     return admin
+
+
+def optional_admin(
+    sw_session: str | None = Cookie(default=None),
+    db: Session = Depends(get_db),
+    now: datetime = Depends(get_now),
+) -> AdminUser | None:
+    """공개 API에서 운영자 로그인 여부만 확인한다 (비밀글 열람, API-031). 로그인이 아니면 None."""
+    return auth_service.authenticate(db, sw_session, now)
