@@ -10,7 +10,8 @@ import type { TiptapDoc } from '../../types/post'
 import ImageUploadButton from '../admin/ImageUploadButton'
 import EditorToolbar from './EditorToolbar'
 import { BodyImage } from './imageNode'
-import { MarkdownTableAsText, PasteFormats } from './pasteExtension'
+import { PasteFormats } from './pasteExtension'
+import { TABLE_EXTENSIONS } from './tableNodes'
 
 interface RichTextEditorProps {
   initialContent: TiptapDoc
@@ -46,10 +47,10 @@ export default function RichTextEditor({
         },
       }),
       BodyImage.configure({ resolveUrl: (id) => imageMap.get(id)?.url }),
+      ...TABLE_EXTENSIONS, // DEC-010 표
       // DEC-009: Markdown 원문·HTML 소스 붙여넣기 → 서식 변환
       // breaks: 한 줄 바꿈도 줄바꿈으로 살린다 (일반 글처럼 붙여 넣은 줄이 합쳐지지 않게)
       Markdown.configure({ markedOptions: { gfm: true, breaks: true } }),
-      MarkdownTableAsText,
       PasteFormats,
     ],
     [imageMap],

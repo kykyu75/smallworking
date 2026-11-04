@@ -317,6 +317,8 @@ HomePage
 | `image` | `<img src={images[imageId].url} alt={alt} loading="lazy">`, `max-width: 100%` |
 | `bold` / `italic` / `strike` | `<strong>` / `<em>` / `<s>` |
 | `link` | `<a href target="_blank" rel="noopener noreferrer">`, `http(s)://`, `mailto:`만 |
+| `table` / `tableRow` (DEC-010) | `<div class="table-scroll" role="region" aria-label="표"><table><tbody>` / `<tr>`. 표 상자 안에서만 가로 스크롤, 페이지는 넘치지 않음 |
+| `tableHeader` / `tableCell` (DEC-010) | `<th scope="col">` / `<td>`. `align`은 `text-center`·`text-right` 클래스 (style 속성 사용 안 함). 칸 최소 폭 6rem |
 | 그 외 노드 / 마크 | **렌더링하지 않음** (무시) |
 | `imageId`가 `images`에 없음 | 해당 이미지 자리 생략 |
 
@@ -453,7 +455,8 @@ HomePage
 | 에디터 | **TipTap** |
 | 저장 형식 | TipTap JSON, `image` 노드는 `attrs: { imageId, alt? }`만 저장 (`src` 저장 안 함) |
 | 에디터 안 이미지 표시 | `imageId`로 업로드 응답 또는 `post.images`의 `url`을 찾아 표시 |
-| 툴바 | 굵게, 기울임, 취소선, 제목(H2/H3), 글머리 목록, 번호 목록, 인용, 코드 블록, 구분선, 링크, 이미지 |
+| 툴바 | 굵게, 기울임, 취소선, 제목(H2/H3), 글머리 목록, 번호 목록, 인용, 코드 블록, 구분선, 링크, **표 넣기**, 이미지 |
+| 표 (DEC-010) | [표 넣기]는 3×3(첫 행 제목 칸). 커서가 표 안에 있을 때만 "표 편집" 묶음 표시: 아래에 행 추가, 오른쪽에 열 추가, 행 삭제, 열 삭제, 표 삭제. Tab으로 다음 칸 이동. 칸 합치기·너비 조절·색 없음. 칸 안에 표를 넣을 수 없음 (붙여 넣은 표 안의 표는 문단으로 풀림). 붙여 넣은 표의 합쳐진 칸은 풀고 짧은 행은 끝에 빈 칸을 채움. 구현: `components/editor/tableNodes.ts` |
 | 링크 입력 | `http://`, `https://`, `mailto:`만 허용 |
 | 게시글당 최대 이미지 | **20장**. 20장이면 이미지 버튼 비활성화, "이미지는 20장까지" 안내 |
 | 업로드 전 사전 검사 | 형식 jpg/png/webp/gif, 원본 용량 10MB 이하. 벗어나면 업로드하지 않고 안내 (서버도 다시 검사) |
@@ -467,7 +470,7 @@ HomePage
 | 화면 이동 확인 | **[M5 구현 세부]** 저장하지 않은 변경이 있으면 관리자 메뉴 링크·로그아웃·[취소]에서 확인 창, 브라우저 닫기·새로고침은 브라우저 기본 확인 |
 | 썸네일 | 서버가 생성 (400px). 서버는 1920px 초과 이미지를 다시 축소해 방어한다 |
 | 동영상 | 업로드 버튼 없음 (REQ-021) |
-| 붙여넣기 (DEC-009) | 서식 있는 복사(웹페이지 등)는 TipTap 기본 붙여넣기로 허용 서식만 남긴다. **Markdown 원문·HTML 소스** 텍스트는 서식으로 바꿔 커서 위치에 넣는다: 제목은 h2·h3로 맞추고, 표는 "칸 \| 칸" 문단, 이미지는 버린다. 결과는 `normalizeDoc`을 거친다. 코드블록 안에서는 변환하지 않는다. `Ctrl+Z` 한 번으로 되돌린다. 구현: `lib/pasteFormats.ts`, `components/editor/pasteExtension.ts` (TC-POST-020~023, TC-SEC-014) |
+| 붙여넣기 (DEC-009) | 서식 있는 복사(웹페이지 등)는 TipTap 기본 붙여넣기로 허용 서식만 남긴다. **Markdown 원문·HTML 소스** 텍스트는 서식으로 바꿔 커서 위치에 넣는다: 제목은 h2·h3로 맞추고, 표는 표로(DEC-010), 이미지는 버린다. 결과는 `normalizeDoc`을 거친다. 코드블록 안에서는 변환하지 않는다. `Ctrl+Z` 한 번으로 되돌린다. 구현: `lib/pasteFormats.ts`, `components/editor/pasteExtension.ts` (TC-POST-020~023, TC-SEC-014) |
 
 #### 저장 시 오류 표시
 
@@ -766,6 +769,7 @@ Claude.md
 | 버전 | 날짜 | 내용 |
 |---|---|---|
 | 0.1 | 2026-11-03 | 초기 화면·컴포넌트 구조 초안 작성 (이전 초안 유실로 재작성) |
+| 1.0 (개정) | 2026-11-04 | DEC-010 반영: 본문 표 — 툴바 [표 넣기]·표 편집 버튼(COMP-135), PostContent 표 렌더링(§8.3), 붙여넣기 표 유지 |
 | 1.0 (개정) | 2026-11-04 | DEC-009 반영: COMP-132 붙여넣기 시 Markdown 원문·HTML 소스를 서식으로 변환 |
 | 1.0 (개정) | 2026-11-03 | DEC-007, 008 반영: Tailwind CSS·React Router 확정, 업로드 전 브라우저 축소(1920px, 4MB 확인), 이미지 주소는 응답 `url` 사용, 로컬 개발 프록시 |
 | 1.0 | 2026-11-03 | DEC-001~006 및 API_SPEC v1.0 반영: TipTap 확정·렌더링 규칙(§8.3), 좋아요 토글, 삭제된 댓글 표시, 로그인·세션 만료 처리, 카테고리 삭제 제한, 에디터 이미지 규칙, 관리자 댓글 화면 API 연결, 타입 갱신, 표시 개수·페이징·브레이크포인트 확정, EditorToolbar(COMP-135) 추가 |

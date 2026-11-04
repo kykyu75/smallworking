@@ -36,6 +36,10 @@ def _list_start(value: Any) -> bool:
     return isinstance(value, int) and not isinstance(value, bool) and 1 <= value <= 100000
 
 
+def _cell_align(value: Any) -> bool:
+    return value in ("left", "center", "right")
+
+
 def _safe_href(value: Any) -> bool:
     return isinstance(value, str) and len(value) <= 2000 and value.strip().lower().startswith(SAFE_LINK_PREFIXES)
 
@@ -53,8 +57,18 @@ NODE_ATTRS: dict[str, dict[str, Any]] = {
     "horizontalRule": {},
     "hardBreak": {},
     "image": {"imageId": _image_id, "alt": _short_text(MAX_ALT_LENGTH)},
+    # DEC-010 표: 칸 합치기(colspan/rowspan)·너비·색은 허용하지 않는다. 정렬만 허용.
+    "table": {},
+    "tableRow": {},
+    "tableHeader": {"align": _cell_align},
+    "tableCell": {"align": _cell_align},
 }
 REQUIRED_ATTRS = {"heading": ("level",), "image": ("imageId",)}
+
+# DEC-010 표 구조: 부모 → 허용되는 자식
+TABLE_CHILDREN = {"table": {"tableRow"}, "tableRow": {"tableHeader", "tableCell"}}
+# 자식 → 반드시 있어야 하는 부모
+TABLE_PARENT = {"tableRow": "table", "tableHeader": "tableRow", "tableCell": "tableRow"}
 
 MARK_ATTRS: dict[str, dict[str, Any]] = {
     "bold": {},
@@ -100,7 +114,7 @@ def validate_content(content: Any) -> ContentSummary:
     image_ids: list[int] = []
     has_text = False
 
-    def walk(node: Any, depth: int) -> None:
+    def walk(node: Any, depth: int, parent: str | None, in_table: bool) -> None:
         nonlocal has_text
         if depth > MAX_DEPTH:
             raise invalid_content("본문이 너무 깊게 중첩되어 있습니다")
@@ -111,6 +125,13 @@ def validate_content(content: Any) -> ContentSummary:
             raise invalid_content(f"허용되지 않은 노드 '{node_type}'")
         if depth > 0 and node_type == "doc":
             raise invalid_content("doc 안에 doc")
+        # DEC-010 표 구조 검사
+        if parent in TABLE_CHILDREN and node_type not in TABLE_CHILDREN[parent]:
+            raise invalid_content(f"'{parent}' 안에 '{node_type}'")
+        if node_type in TABLE_PARENT and parent != TABLE_PARENT[node_type]:
+            raise invalid_content(f"'{node_type}'는 '{TABLE_PARENT[node_type]}' 안에만 있을 수 있습니다")
+        if node_type == "table" and in_table:
+            raise invalid_content("표 안에 표")
 
         extra = set(node) - {"type", "attrs", "content", "marks", "text"}
         if extra:
@@ -144,14 +165,16 @@ def validate_content(content: Any) -> ContentSummary:
             image_ids.append(node["attrs"]["imageId"])
 
         children = node.get("content")
+        if node_type in TABLE_CHILDREN and not children:
+            raise invalid_content(f"빈 '{node_type}'")
         if children is None:
             return
         if not isinstance(children, list):
             raise invalid_content("content 형식")
         for child in children:
-            walk(child, depth + 1)
+            walk(child, depth + 1, node_type, in_table or node_type == "table")
 
-    walk(content, 0)
+    walk(content, 0, None, False)
 
     if len(image_ids) > MAX_IMAGES:
         raise AppError(422, "IMAGE_LIMIT_EXCEEDED", "이미지는 게시글당 20장까지 넣을 수 있습니다.")

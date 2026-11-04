@@ -174,8 +174,9 @@ Alembic 초기 마이그레이션에서 다음 4개를 생성한다.
 
 | 구분 | 허용 |
 |---|---|
-| 노드 | `doc`, `paragraph`, `text`, `heading`(level 2~3), `bulletList`, `orderedList`, `listItem`, `blockquote`, `codeBlock`, `horizontalRule`, `hardBreak`, `image` |
+| 노드 | `doc`, `paragraph`, `text`, `heading`(level 2~3), `bulletList`, `orderedList`, `listItem`, `blockquote`, `codeBlock`, `horizontalRule`, `hardBreak`, `image`, **`table`, `tableRow`, `tableHeader`, `tableCell`** (DEC-010) |
 | 마크 | `bold`, `italic`, `strike`, `code`, `link` |
+| 표 (DEC-010) | `table` → `tableRow`만, `tableRow` → `tableHeader`·`tableCell`만, 행·칸은 표 구조 안에만. 빈 표·빈 행 거부. **표 안의 표 거부.** 칸 속성은 `align`(`left`/`center`/`right`)만 — 칸 합치기(`colspan`·`rowspan`)·너비(`colwidth`)·스타일은 거부 |
 | `image.attrs` | `imageId`(필수, 정수)와 `alt`(선택)만 허용. **`src`는 저장하지 않는다** (표시할 때 `post_image`에서 경로를 찾음) |
 | `link.attrs` | `href`만 허용, `http://`, `https://`, `mailto:`로 시작하는 경우만 허용 |
 
@@ -187,6 +188,7 @@ Alembic 초기 마이그레이션에서 다음 4개를 생성한다.
 - 같은 `imageId`가 본문에 두 번 나오면 거부한다.
 
 > 정확한 허용 목록은 COMPONENT_SPEC의 에디터 툴바 구성과 일치해야 한다.
+> 2026-11-04: DEC-010으로 표 노드 추가 (DB 구조 변경 없음 — `post.content` JSONB 안의 노드 종류만 늘어남, 마이그레이션 불필요).
 
 ---
 
@@ -630,4 +632,5 @@ Claude.md
 |---|---|---|
 | 0.1 | 2026-09-15 | 초기 DB 모델 초안 작성 |
 | 1.0 | 2026-11-03 | DEC-001~006 반영: `content` JSONB 확정, `post_image` 임시 이미지·썸네일, `comment` soft delete, `post_like` UNIQUE, `admin_user`·`admin_session` 신규, FK 삭제 정책, 컬럼 길이, 인덱스, Seed, 정리 작업 |
+| 1.0 (개정) | 2026-11-04 | DEC-010 반영: §5.4 허용 노드에 표(`table`, `tableRow`, `tableHeader`, `tableCell`)와 구조 규칙 추가 (스키마·마이그레이션 변경 없음) |
 | 1.0 (개정) | 2026-11-03 | DEC-007 반영: 이미지 경로를 저장소 키로 변경(로컬/Vercel Blob 공통), 운영 DB Neon, 초기 관리자는 관리 명령으로 생성, 정리 작업을 Vercel Cron 하루 1회로 변경 |
