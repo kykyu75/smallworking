@@ -31,7 +31,7 @@ PostgreSQL                             →  Neon
 | API_SPEC | `DOCS/05-api/SmallWorking_API_SPEC_v1.0.md` | API-001~028, 오류 코드 |
 | COMPONENT_SPEC | `DOCS/06-ui/SmallWorking_COMPONENT_SPEC_v1.0.md` | 화면, COMP-xxx, 타입 |
 | TEST_CASES | `DOCS/07-testing/SmallWorking_TEST_CASES_v1.0.md` | TC-xxx, Definition of Done |
-| DECISIONS | `DOCS/SmallWorking_DECISIONS.md` | DEC-001~009, 결정 이유 |
+| DECISIONS | `DOCS/SmallWorking_DECISIONS.md` | DEC-001~010, 결정 이유 |
 
 - **항상 가장 높은 버전 파일**을 읽는다. 이전 버전(v0.1 등)은 기록용이며 구현 기준이 아니다.
 - 문서끼리 충돌하면 우선순위: **DECISIONS > DATA_MODEL / API_SPEC / COMPONENT_SPEC > TRD > REQUIREMENTS > PRD**. 그래도 애매하면 사용자에게 묻는다.
@@ -44,7 +44,7 @@ PostgreSQL                             →  Neon
 1. **명세에 없는 기능을 추가하지 않는다.** PRD §14, REQUIREMENTS §14의 범위 제외 기능(회원가입, 댓글 좋아요, 다단계 답글, 동영상 등)은 만들지 않는다.
 2. **명세와 다르게 구현해야 할 이유가 생기면, 코드부터 바꾸지 않는다.** 이유를 설명하고 사용자 확인을 받은 뒤 → 문서 수정 → 코드 수정 순서로 한다.
 3. **TBD / 미확정 사항을 임의로 정하지 않는다.** 선택지와 추천안을 제시하고 사용자가 정한다. 정해지면 DECISIONS에 기록한다.
-4. **DEC-008 목록(DEC-009로 추가된 것 포함)에 없는 라이브러리를 사용자 확인 없이 추가하지 않는다.** (패키지 하나라도 추가 전에 이유와 대안을 말한다.)
+4. **DEC-008 목록(DEC-009·010으로 추가된 것 포함)에 없는 라이브러리를 사용자 확인 없이 추가하지 않는다.** (패키지 하나라도 추가 전에 이유와 대안을 말한다.)
 5. **비밀값을 코드에 쓰지 않는다.** DB 접속 정보, 관리자 계정, 토큰은 환경변수로만 다룬다. `.env`는 Git에 올리지 않는다.
 6. **테스트 없이 "완료"라고 하지 않는다.** TEST_CASES §19 Definition of Done을 따른다. 테스트를 실행하지 못했으면 못했다고 말한다.
 7. **기존 기능을 수정할 때는 관련 TC를 먼저 확인**하고, 수정 후 해당 테스트를 다시 실행한다.
@@ -91,7 +91,7 @@ TEST_CASES에 TC 추가
 
 | 영역 | 사용 |
 |---|---|
-| Frontend | React, TypeScript, Vite, React Router, Tailwind CSS, TipTap (`@tiptap/markdown`: 붙여넣기 변환, DEC-009) |
+| Frontend | React, TypeScript, Vite, React Router, Tailwind CSS, TipTap (`@tiptap/markdown`: 붙여넣기 변환 DEC-009, `@tiptap/extension-table`: 본문 표 DEC-010) |
 | Backend | Python 3.12, FastAPI, Pydantic v2, SQLAlchemy 2.x, Alembic, psycopg(v3), argon2-cffi, Pillow, Vercel Blob Python SDK |
 | 테스트 | pytest + TestClient(httpx), Vitest + React Testing Library + jsdom, Playwright |
 | 개발 도구 | uvicorn (로컬 실행), oxlint (Frontend 코드 검사) |
@@ -291,3 +291,4 @@ SmallWorking/
 |---|---|
 | 2026-11-03 | 최초 작성 (PRD v1.0, REQUIREMENTS v1.1, TRD v1.1, DATA_MODEL·API_SPEC·COMPONENT_SPEC·TEST_CASES v1.0, DEC-001~008 기준) |
 | 2026-11-04 | DEC-009 반영: 문서 표 DEC-001~009, 기술 스택에 `@tiptap/markdown` 추가 |
+| 2026-11-04 | DEC-010 반영: 본문 표, 기술 스택에 `@tiptap/extension-table` 추가 |
