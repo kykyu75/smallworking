@@ -552,6 +552,30 @@ Vercel (하나의 프로젝트, 하나의 도메인)
 
 ---
 
+## DEC-012. Vercel 배포 구성 (M11)
+
+- 결정일: 2026-11-04 (사용자: Services 방식 선택)
+- 계기: DEC-007·TRD는 `vercel.json` + `api/index.py` 방식을 적었지만 "정확한 구성은 구현 단계에서 Vercel 공식 문서로 확정"하기로 했다. 2026-11 현재 Vercel 문서는 프론트+Python 백엔드를 한 프로젝트에 둘 때 **Services**를 권하고, `api/` 폴더 방식은 "기존 프로젝트 지원"으로만 안내한다.
+
+| 항목 | 결정 |
+|---|---|
+| 실행 구조 | **Vercel Services** (Beta, 모든 플랜). `web` = `frontend/`(Vite), `api` = `backend/`(FastAPI, 진입점 `app.main:app`). `api/index.py`는 만들지 않는다 |
+| 라우팅 | `/api/(.*)` → `api`, 나머지 → `web`. 백엔드는 원래 경로(`/api/...`) 그대로 받는다. `web`은 파일이 없는 주소를 `index.html`로 (SPA) |
+| Cron | `/api/cron/cleanup`, `0 18 * * *` (UTC 18시 = 한국 03시, Hobby는 ±59분 오차) |
+| Python | 3.12 (`backend/.python-version`), 운영 패키지 버전 고정 (`backend/requirements.txt`), 개발 도구(uvicorn·pytest·httpx)는 `requirements-dev.txt`로 |
+| DB 연결 | 앱은 Neon **풀러 주소**(`DATABASE_URL`)를 쓴다. 풀러는 세션 설정을 지원하지 않으므로 `-c timezone=UTC`를 보내지 않고, 대신 **DB 기본 시간대를 UTC로** 설정한다 (마이그레이션 `8c1f2d3e4a5b`). 직접 연결(로컬 등)에는 지금처럼 시작 옵션을 보낸다 |
+| 주소 형식 | Neon이 주는 `postgres://`·`postgresql://` 주소를 앱이 psycopg 형식으로 바꿔 쓴다 |
+| 마이그레이션·관리자 생성 | Neon **직접 연결 주소**(`DATABASE_URL_UNPOOLED`)로 로컬에서 `alembic upgrade head`, `create-admin` 실행 (배포 가이드 절차) |
+| Origin 검사 | Vercel이 공개 주소를 `x-forwarded-host`로 전달하므로 `Host`와 함께 같은 사이트로 인정한다 (브라우저 Origin은 페이지가 바꿀 수 없어 안전) |
+| 미리보기 DB | Neon 연동의 **미리보기 브랜치**(배포마다 운영 DB 복사본) 사용 — 미리보기 확인이 운영 데이터를 바꾸지 않게 |
+| 지역 | 함수와 DB를 같은 지역에 둔다 (권장: Neon Singapore `aws-ap-southeast-1` + Vercel 함수 `sin1`) |
+| 병합 정책 | Vercel 연결 후 `main` 병합 = 운영 배포이므로 **배포가 함께 일어나는 병합은 매번 사용자 확인** (M10까지의 "테스트 통과 시 자동 병합"은 종료) |
+
+- 확인되지 않은 점 (미리보기 배포에서 확인, TC-DEP): Services + Cron 조합, Vite 서비스의 SPA 주소 처리, 풀러 연결의 시간대. 안 되면 사용자에게 알리고 `api/` 폴더 방식으로 바꾼다.
+- 관련: TRD v1.1 §15·§17·§18 (개정), CLAUDE.md §6·§10·§14, `DOCS/08-deploy/SmallWorking_DEPLOY_GUIDE.md`
+
+---
+
 ## 진행 현황
 
 | 순서 | 항목 | 상태 |
@@ -567,6 +591,7 @@ Vercel (하나의 프로젝트, 하나의 도메인)
 | 9 | 에디터 붙여넣기 서식 변환 (구현 중 요청) | ✅ DEC-009 |
 | 10 | 본문 표 지원 (구현 중 요청) | ✅ DEC-010 |
 | 11 | 요청 게시판 (구현 중 요청) | ✅ DEC-011 |
+| 12 | Vercel 배포 구성 (M11) | ✅ DEC-012 |
 
 ### 아직 남은 미확정 항목 (구현 단계 이후)
 
@@ -592,3 +617,4 @@ Vercel (하나의 프로젝트, 하나의 도메인)
 | 2026-11-04 | DEC-009(붙여넣기 Markdown·HTML 소스 변환) 기록, DEC-008에 `@tiptap/markdown` 추가 |
 | 2026-11-04 | DEC-010(본문 표) 기록, DEC-008에 `@tiptap/extension-table` 추가, DEC-009 표 처리 변경 |
 | 2026-11-04 | DEC-011(요청 게시판) 초안 → 확정 |
+| 2026-11-04 | DEC-012(Vercel Services 배포 구성, Neon 연결 방식, 병합 정책) 기록 |

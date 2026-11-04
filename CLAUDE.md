@@ -31,7 +31,8 @@ PostgreSQL                             →  Neon
 | API_SPEC | `DOCS/05-api/SmallWorking_API_SPEC_v1.0.md` | API-001~038, 오류 코드 |
 | COMPONENT_SPEC | `DOCS/06-ui/SmallWorking_COMPONENT_SPEC_v1.0.md` | 화면, COMP-xxx, 타입 |
 | TEST_CASES | `DOCS/07-testing/SmallWorking_TEST_CASES_v1.0.md` | TC-xxx, Definition of Done |
-| DECISIONS | `DOCS/SmallWorking_DECISIONS.md` | DEC-001~011, 결정 이유 |
+| DECISIONS | `DOCS/SmallWorking_DECISIONS.md` | DEC-001~012, 결정 이유 |
+| DEPLOY_GUIDE | `DOCS/08-deploy/SmallWorking_DEPLOY_GUIDE.md` | Vercel·Neon·Blob 배포 절차 (DEC-012) |
 
 - **항상 가장 높은 버전 파일**을 읽는다. 이전 버전(v0.1 등)은 기록용이며 구현 기준이 아니다.
 - 문서끼리 충돌하면 우선순위: **DECISIONS > DATA_MODEL / API_SPEC / COMPONENT_SPEC > TRD > REQUIREMENTS > PRD**. 그래도 애매하면 사용자에게 묻는다.
@@ -105,10 +106,8 @@ TEST_CASES에 TC 추가
 ```text
 SmallWorking/
 ├── CLAUDE.md
-├── DOCS/                    # 명세 문서 (§2)
-├── vercel.json              # 빌드, /api/* 연결, Cron
-├── api/
-│   └── index.py             # Vercel Functions 진입점 (backend app 불러오기만)
+├── DOCS/                    # 명세 문서 (§2), 배포 가이드 DOCS/08-deploy
+├── vercel.json              # Vercel Services(web=frontend/, api=backend/), /api/* → api, Cron (DEC-012)
 ├── backend/
 │   ├── app/
 │   │   ├── main.py          # FastAPI app 생성, 라우터 등록, 오류 핸들러
@@ -196,7 +195,9 @@ SmallWorking/
 
 | 변수 | 용도 |
 |---|---|
-| `DATABASE_URL` | PostgreSQL 접속 |
+| `DATABASE_URL` | PostgreSQL 접속 (운영: Neon 풀러 주소, `postgres://` 형식도 됨) |
+| `DATABASE_URL_UNPOOLED` | Neon 직접 연결 — 운영 마이그레이션·관리자 생성용 (앱은 안 씀, DEC-012) |
+| `SW_ENV_FILE` | 지정하면 그 파일**만** 읽는다 (예: `.env.neon`로 운영 DB 작업, 개발 `.env`와 섞이지 않게) |
 | `STORAGE_BACKEND` | `local` / `blob` |
 | `UPLOAD_ROOT` | 로컬 저장 폴더 (개발) |
 | `BLOB_READ_WRITE_TOKEN` | Vercel Blob (운영) |
@@ -273,6 +274,8 @@ SmallWorking/
 | Frontend lint | `npm run lint` |
 | E2E 테스트 | `npm run e2e` (frontend 폴더) — E2E 전용 Backend(8001, DB `smallworking_e2e`)와 Frontend(5174)를 자동으로 띄운다. 개발 서버·개발 DB와 겹치지 않음. 결과 보기: `npm run e2e:report` |
 | Playwright 브라우저 설치 (최초 1회) | `npx playwright install chromium` |
+| 운영 DB 마이그레이션·관리자 생성 | `backend/.env.neon` 작성 후 `$env:SW_ENV_FILE=".env.neon"; .\.venv\Scripts\python -m alembic upgrade head; .\.venv\Scripts\python -m app.cli create-admin; Remove-Item Env:SW_ENV_FILE` — **실행 전 사용자 확인** (`DOCS/08-deploy/SmallWorking_DEPLOY_GUIDE.md` 5단계) |
+| 배포 | 브랜치 push → Vercel 미리보기 → 확인 후 `main` 병합 = 운영 배포 (**병합 전 사용자 확인**, DEC-012) |
 
 ### 로컬 환경 메모
 
@@ -293,3 +296,4 @@ SmallWorking/
 | 2026-11-04 | DEC-009 반영: 문서 표 DEC-001~009, 기술 스택에 `@tiptap/markdown` 추가 |
 | 2026-11-04 | DEC-010 반영: 본문 표, 기술 스택에 `@tiptap/extension-table` 추가 |
 | 2026-11-04 | DEC-011 반영: 요청 게시판 (REQ-045~049, API-029~038, `visitor_request`) |
+| 2026-11-04 | DEC-012 반영: Vercel Services 구조(§6), `DATABASE_URL_UNPOOLED`·`SW_ENV_FILE`(§10), 운영 DB·배포 명령(§14) |
