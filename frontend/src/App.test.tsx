@@ -20,7 +20,9 @@ describe('공개 화면 기본 구조', () => {
   it('홈 화면에 사이트 이름을 표시한다', async () => {
     mockApi([{ path: '/api/categories', body: { items: DEFAULT_CATEGORIES } }, { path: '/api/home', body: EMPTY_HOME }, { path: '/api/posts', body: { items: [], page: 1, size: 12, total: 0 } }])
     renderAt('/')
-    expect(screen.getByRole('heading', { name: 'SmallWorking' })).toBeInTheDocument()
+    expect(screen.getByRole('heading', { name: '지대넓얕' })).toBeInTheDocument()
+    // COMP-005 푸터 연락처
+    expect(screen.getByRole('link', { name: 'kykyu@naver.com' })).toHaveAttribute('href', 'mailto:kykyu@naver.com')
     await screen.findAllByRole('link', { name: 'DIY' })
   })
 
@@ -42,8 +44,8 @@ describe('카테고리 메뉴 (COMP-002~004)', () => {
     renderAt('/')
     const desktopMenu = await screen.findByRole('navigation', { name: '카테고리' })
     const links = within(desktopMenu).getAllByRole('link')
-    // 카테고리 뒤에 고정 메뉴 "요청하기" (COMP-006, DEC-011)
-    expect(links.map((a) => a.textContent)).toEqual(['DIY', 'Portfolio', 'Blog', 'Board', '여행', '요청하기'])
+    // 카테고리 뒤에 고정 메뉴 "쥔장에게 묻기" (COMP-006, DEC-011)
+    expect(links.map((a) => a.textContent)).toEqual(['DIY', 'Portfolio', 'Blog', 'Board', '여행', '쥔장에게 묻기'])
     expect(links[4]).toHaveAttribute('href', '/category/9')
     expect(links[5]).toHaveAttribute('href', '/requests')
   })

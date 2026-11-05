@@ -35,7 +35,7 @@ function RequestListItem({ item }: { item: RequestSummary }) {
 }
 
 export default function RequestBoardPage() {
-  useDocumentTitle('요청하기')
+  useDocumentTitle('쥔장에게 묻기')
   const [searchParams, setSearchParams] = useSearchParams()
   const page = Math.max(1, Number(searchParams.get('page')) || 1)
   const [result, setResult] = useState<{ page: number; data: Page<RequestSummary> } | null>(null)
@@ -69,7 +69,7 @@ export default function RequestBoardPage() {
     <main className="mx-auto max-w-3xl px-4 py-8">
       <header className="flex flex-wrap items-end justify-between gap-3">
         <div>
-          <h1 className="text-2xl font-bold">요청하기</h1>
+          <h1 className="text-2xl font-bold">쥔장에게 묻기</h1>
           <p className="mt-2 text-gray-600">필요한 자료, 만들어 보고 싶은 DIY 등 무엇이든 남겨 주세요.</p>
         </div>
         <Link to="/requests/new" className="rounded bg-gray-900 px-4 py-2 text-sm font-medium text-white">

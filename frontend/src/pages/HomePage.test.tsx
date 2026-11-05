@@ -43,7 +43,12 @@ describe('홈 화면 (PAGE-001)', () => {
       { path: '/api/home', body: HOME },
     ])
     renderHome()
-    expect(screen.getByRole('heading', { level: 1, name: 'SmallWorking' })).toBeInTheDocument()
+    expect(screen.getByRole('heading', { level: 1, name: '지대넓얕' })).toBeInTheDocument()
+    // COMP-010 블로그 링크 (새 탭)
+    const blog = screen.getByRole('link', { name: '블로그 바로가기 →' })
+    expect(blog).toHaveAttribute('href', 'https://blog.naver.com/smallworking')
+    expect(blog).toHaveAttribute('target', '_blank')
+    expect(blog).toHaveAttribute('rel', 'noopener noreferrer')
 
     const diy = await screen.findByRole('region', { name: 'DIY' })
     expect(within(diy).getAllByRole('link').map((a) => a.textContent)).toEqual([
