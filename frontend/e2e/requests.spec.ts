@@ -7,10 +7,10 @@ test('요청 게시판: 비밀글 작성 → 다른 방문자 열람 → 운영�
   const title = unique('도면 요청')
   const password = 'secret-1234'
 
-  // 1. 방문자 A: 메뉴 "요청하기" → 요청 남기기 (비밀글)
+  // 1. 방문자 A: 메뉴 "쥔장에게 묻기" → 요청 남기기 (비밀글)
   await page.goto('/')
-  await page.getByRole('navigation', { name: '카테고리' }).getByRole('link', { name: '요청하기' }).click()
-  await expect(page.getByRole('heading', { level: 1, name: '요청하기' })).toBeVisible()
+  await page.getByRole('navigation', { name: '카테고리' }).getByRole('link', { name: '쥔장에게 묻기' }).click()
+  await expect(page.getByRole('heading', { level: 1, name: '쥔장에게 묻기' })).toBeVisible()
   await page.getByRole('link', { name: '요청 남기기' }).click()
 
   const form = page.getByRole('form', { name: '요청 작성' })
@@ -62,13 +62,13 @@ test('요청 게시판: 비밀글 작성 → 다른 방문자 열람 → 운영�
   await expect(visitor.getByText('답변이 달려 수정할 수 없습니다.')).toBeVisible()
   await expect(visitor.getByRole('button', { name: '수정' })).toHaveCount(0)
 
-  // 5. 휴대폰 폭: 목록·상세 가로 스크롤 없음, 햄버거 메뉴에도 "요청하기"
+  // 5. 휴대폰 폭: 목록·상세 가로 스크롤 없음, 햄버거 메뉴에도 "쥔장에게 묻기"
   await visitor.setViewportSize({ width: 360, height: 800 })
   await expectNoHorizontalScroll(visitor)
   await visitor.goto('/requests')
   await expectNoHorizontalScroll(visitor)
   await visitor.getByRole('button', { name: '메뉴 열기' }).click()
-  await expect(visitor.locator('#mobile-menu').getByRole('link', { name: '요청하기' })).toBeVisible()
+  await expect(visitor.locator('#mobile-menu').getByRole('link', { name: '쥔장에게 묻기' })).toBeVisible()
   await other.close()
 
   const api = await adminApi()

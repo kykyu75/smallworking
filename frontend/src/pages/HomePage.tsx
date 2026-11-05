@@ -12,13 +12,25 @@ import type { HomeCategory, HomeData } from '../types/home'
 import type { PostSummary } from '../types/post'
 
 // COMP-010 IntroSection
+const BLOG_URL = 'https://blog.naver.com/smallworking'
+
 function IntroSection() {
   return (
     <section className="border-b border-gray-100 bg-gray-50">
       <div className="mx-auto max-w-5xl px-4 py-12 md:py-16">
-        <h1 className="text-3xl font-bold md:text-4xl">SmallWorking</h1>
+        <h1 className="text-3xl font-bold md:text-4xl">지대넓얕</h1>
         <p className="mt-3 text-lg text-gray-600">지적인 대화를 위한 넓고 얕은 지식</p>
         <p className="mt-2 text-gray-500">직접 만들고, 경험하고, 공부하고, 생각한 것들을 기록합니다.</p>
+        <p className="mt-4">
+          <a
+            href={BLOG_URL}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="font-medium text-gray-700 underline hover:text-gray-900"
+          >
+            블로그 바로가기 →
+          </a>
+        </p>
       </div>
     </section>
   )

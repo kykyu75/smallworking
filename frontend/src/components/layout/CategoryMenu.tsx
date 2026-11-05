@@ -20,7 +20,7 @@ export default function CategoryMenu({ categories }: { categories: Category[] })
         {/* COMP-006 요청 게시판 (DEC-011) — 카테고리 뒤 고정 메뉴 */}
         <li>
           <NavLink to="/requests" className={linkClass}>
-            요청하기
+            쥔장에게 묻기
           </NavLink>
         </li>
       </ul>

@@ -87,7 +87,7 @@ describe('요청 게시판 — 방문자 (DEC-011)', () => {
     expect(items[0]).toHaveAttribute('href', '/requests/2')
     expect(items[1]).toHaveTextContent('요청 1')
     expect(items[1]).toHaveTextContent('접수')
-    expect(document.title).toBe('요청하기 - SmallWorking')
+    expect(document.title).toBe('쥔장에게 묻기 - SmallWorking')
   })
 
   it('TC-REQ-001 작성 → 작성 응답으로 바로 상세 화면 (비밀글도 비밀번호를 다시 묻지 않음)', async () => {
