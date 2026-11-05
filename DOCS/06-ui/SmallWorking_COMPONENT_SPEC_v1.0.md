@@ -185,7 +185,7 @@ App
 
 | 항목 | 내용 |
 |---|---|
-| 역할 | 사이트명, 모토("지적인 대화를 위한 넓고 얕은 지식"), 저작권 표시 |
+| 역할 | 사이트명, 모토("지적인 대화를 위한 넓고 얕은 지식"), 연락처("이메일 : kykyu@naver.com", `mailto:` 링크), 저작권 표시 |
 | API | 없음 |
 
 ---
@@ -229,7 +229,7 @@ HomePage
 
 | ID | 컴포넌트 | 역할 | Props | REQ |
 |---|---|---|---|---|
-| COMP-010 | IntroSection | 사이트/운영자 소개 문구 | 없음 (정적 문구) | REQ-004 |
+| COMP-010 | IntroSection | 제목 **"지대넓얕"**, 모토, 소개 문구, **"블로그 바로가기 →"** 링크(`https://blog.naver.com/smallworking`, 새 탭, `rel="noopener noreferrer"`) | 없음 (정적 문구) | REQ-004 |
 | COMP-011 | CategorySection | 카테고리 이름, 최신 글 3개, "더보기" 링크(`/category/:id`). 글이 없으면 EmptyState | `category: HomeCategory` | REQ-005, REQ-008 |
 | COMP-012 | LatestPosts | 전체 최신 글 5개 | `posts: PostSummary[]` | REQ-006 |
 | COMP-013 | PopularPosts | 인기 글 5개 (좋아요 순) | `posts: PostSummary[]` | REQ-007 |
@@ -500,8 +500,8 @@ HomePage
 
 | ID | 컴포넌트 | 역할 | API | REQ |
 |---|---|---|---|---|
-| COMP-006 | RequestMenuLink | 공개 메뉴(가로·햄버거) 맨 끝 **"요청하기"** → `/requests` | — | REQ-046 |
-| COMP-040 | RequestBoardPage | 목록 (최신순 12개/페이지, `?page=n`), [요청 남기기] 버튼 | API-029 | REQ-046 |
+| COMP-006 | RequestMenuLink | 공개 메뉴(가로·햄버거) 맨 끝 **"쥔장에게 묻기"** → `/requests` | — | REQ-046 |
+| COMP-040 | RequestBoardPage | 제목·탭 제목 "쥔장에게 묻기", 목록 (최신순 12개/페이지, `?page=n`), [요청 남기기] 버튼 | API-029 | REQ-046 |
 | COMP-041 | RequestListItem | 종류 배지, 제목(비밀글은 "🔒 비밀글입니다"), 닉네임, 작성일, 상태 배지(접수 / 답변 완료) | — | REQ-046 |
 | COMP-042 | RequestForm | 종류 선택, 제목(글자 수), 내용(글자 수), 닉네임, 비밀번호, 비밀글 체크. 작성·수정에 같이 사용 (수정 때는 닉네임 숨김) | API-030, API-033 | REQ-045, 048 |
 | COMP-043 | RequestDetailPage | 상세. `locked`면 비밀번호 입력란(COMP-044), 열면 제목·내용·답변. [수정][삭제] (답변이 있으면 수정 버튼 대신 "답변이 달려 수정할 수 없습니다") | API-031, 032, 034 | REQ-047, 048 |
@@ -794,6 +794,7 @@ Claude.md
 | 버전 | 날짜 | 내용 |
 |---|---|---|
 | 0.1 | 2026-11-03 | 초기 화면·컴포넌트 구조 초안 작성 (이전 초안 유실로 재작성) |
+| 1.0 (개정) | 2026-11-05 | 사용자 요청: 홈 제목 "지대넓얕"·블로그 링크(COMP-010), 푸터 이메일(COMP-005), 메뉴·요청 목록 제목 "쥔장에게 묻기"(COMP-006·040) |
 | 1.0 (개정) | 2026-11-04 | DEC-011 반영: 요청 게시판 PAGE-005~007·108, §9.7 COMP-006·040~045·150·151 |
 | 1.0 (개정) | 2026-11-04 | DEC-010 반영: 본문 표 — 툴바 [표 넣기]·표 편집 버튼(COMP-135), PostContent 표 렌더링(§8.3), 붙여넣기 표 유지 |
 | 1.0 (개정) | 2026-11-04 | DEC-009 반영: COMP-132 붙여넣기 시 Markdown 원문·HTML 소스를 서식으로 변환 |
